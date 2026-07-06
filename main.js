@@ -9230,6 +9230,11 @@ async function main() {
 			changeVideoDevice(e.data.changeVideoDevice);
 		}
 
+		if ("changeVideoDeviceId" in e.data) {
+			warnlog(e.data.changeVideoDeviceId);
+			changeVideoDeviceById(e.data.changeVideoDeviceId);
+		}
+
 		if ("changeAudioDevice" in e.data) {
 			warnlog(e.data.changeAudioDevice);
 			changeAudioDevice(e.data.changeAudioDevice);
