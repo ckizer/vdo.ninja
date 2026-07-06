@@ -51649,12 +51649,23 @@ function replaceURLs(message) {
 }
 
 function getChatMessage(msg, label = false, director = false, overlay = false, UUID = false) {
-	msg = sanitizeChat(msg); // keep it clean.
+	var coupleRoomBridgePrefix = "__COUPLE_ROOM_EVENT__:";
+	var coupleRoomBridgeMessage = false;
+	try {
+		coupleRoomBridgeMessage =
+			typeof urlParams !== "undefined" &&
+			urlParams.has("coupleroom") &&
+			msg.indexOf(coupleRoomBridgePrefix) === 0;
+	} catch (e) {
+		coupleRoomBridgeMessage = false;
+	}
+
+	msg = sanitizeChat(msg, coupleRoomBridgeMessage ? 4096 : 500); // keep it clean.
 	if (msg == "") {
 		return;
 	}
 
-	if (session.sessionLog) {
+	if (session.sessionLog && !coupleRoomBridgeMessage) {
 		var chatSource = label ? sanitizeLabel(label) : (director ? "Director" : "Someone");
 		pushSessionLogEntry("chat", chatSource, msg);
 	}
@@ -51673,6 +51684,24 @@ function getChatMessage(msg, label = false, director = false, overlay = false, U
 		if (UUID in session.rpcs) {
 			apiBlob.streamID = session.rpcs[UUID].streamID || false;
 		}
+	}
+
+	if (coupleRoomBridgeMessage) {
+		data.msg = msg;
+		data.label = label ? sanitizeLabel(label) : "";
+		data.type = "recv";
+
+		if (isIFrame) {
+			parent.postMessage(
+				{
+					gotChat: data,
+					chat: data,
+					coupleRoomEvent: true
+				},
+				session.iframetarget
+			);
+		}
+		return;
 	}
 
 	const streamFallbackLabel = (!label && session.director && UUID && session.rpcs[UUID] && session.rpcs[UUID].streamID)
