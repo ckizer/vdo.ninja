@@ -3329,6 +3329,53 @@
 			
 			console.log("->> Note: Do not paste code into this console unless from a trusted source <<--")
 
+			(function () {
+				try {
+					var coupleRoomParams = new URLSearchParams(window.location.search);
+					if (!coupleRoomParams.has("coupleroom")) {
+						return;
+					}
+
+					var coupleRoomHangupSent = false;
+					function notifyCoupleRoomHangup(reason) {
+						if (coupleRoomHangupSent || !window.parent || window.parent === window) {
+							return;
+						}
+						coupleRoomHangupSent = true;
+						window.parent.postMessage(
+							{
+								action: "couple-room-hangup",
+								type: "couple-room.hangup",
+								reason: reason || "vdo-hangup"
+							},
+							"*"
+						);
+					}
+
+					function hasVisibleHangupContainer() {
+						var nodes = document.querySelectorAll("#hangupContainer");
+						for (var i = 0; i < nodes.length; i++) {
+							var node = nodes[i];
+							var style = window.getComputedStyle(node);
+							if (
+								style.display !== "none" &&
+								style.visibility !== "hidden" &&
+								node.getClientRects().length > 0
+							) {
+								return true;
+							}
+						}
+						return false;
+					}
+
+					window.setInterval(function () {
+						if (hasVisibleHangupContainer()) {
+							notifyCoupleRoomHangup("vdo-hangup-screen");
+						}
+					}, 300);
+				} catch (e) {}
+			})();
+
 			
 			////   Are you wanting general site password protection for your self-deployment?
 			////   * You can also use HTTP Basic Authorization within your Web Server for more security
