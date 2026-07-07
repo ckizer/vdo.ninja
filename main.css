@@ -4939,10 +4939,12 @@ a#reshare , a#inviteLinkURL{
 	text-align: center;
 	border-bottom-left-radius: 50px;
 	border-bottom-right-radius: 50px;
-	text-transform: uppercase;
-	letter-spacing: 3;
+	text-transform: none;
+	letter-spacing: 0;
 	box-shadow: 0px 0px 10px #00000059;
-	font-size: 0.7em
+	font-size: 16px;
+	font-weight: 500;
+	line-height: 1.4;
 }
 
 .video-label.rounded {
