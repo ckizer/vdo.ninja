@@ -9681,7 +9681,14 @@ function updateMixerRun(e = false) {
 					if (session.labelsize) {
 						fontsize = (fontsize * session.labelsize) / 100;
 					}
-					label.style.fontSize = session.labelstyle === "toprounded" ? "16px" : parseInt(fontsize) + "px";
+					if (session.labelstyle === "toprounded") {
+						label.style.setProperty("font-size", "16px", "important");
+						label.style.setProperty("font-weight", "500", "important");
+						label.style.setProperty("letter-spacing", "0", "important");
+						label.style.setProperty("text-transform", "none", "important");
+					} else {
+						label.style.fontSize = parseInt(fontsize) + "px";
+					}
 				}
 
 				if ((
@@ -9780,7 +9787,14 @@ function updateMixerRun(e = false) {
 							if (session.labelsize) {
 								fontsize = (fontsize * session.labelsize) / 100;
 							}
-							holder.label.style.fontSize = session.labelstyle === "toprounded" ? "16px" : parseInt(fontsize) + "px";
+							if (session.labelstyle === "toprounded") {
+								holder.label.style.setProperty("font-size", "16px", "important");
+								holder.label.style.setProperty("font-weight", "500", "important");
+								holder.label.style.setProperty("letter-spacing", "0", "important");
+								holder.label.style.setProperty("text-transform", "none", "important");
+							} else {
+								holder.label.style.fontSize = parseInt(fontsize) + "px";
+							}
 						}
 						holder.label.innerHTML = labelContent
 							.map(item => `<span>${escapeHtml(String(item.value))}</span>`)
