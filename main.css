@@ -8346,3 +8346,25 @@ video.viewchroma-source-hidden {
     visibility: hidden !important;
     pointer-events: none !important;
 }
+
+/* Couple Room: keep VDO stream names as normal UI labels. */
+.video-label,
+.video-label.toprounded,
+.video-label.rounded,
+.video-label.floating3d,
+.video-label *,
+.video-label.toprounded * {
+	font-size: 16px !important;
+	font-weight: 500 !important;
+	letter-spacing: 0 !important;
+	text-transform: none !important;
+	line-height: 1.4 !important;
+}
+
+.video-label.toprounded {
+	padding: 8px 16px !important;
+	width: auto !important;
+	max-width: min(70%, 520px) !important;
+	border-bottom-left-radius: 12px !important;
+	border-bottom-right-radius: 12px !important;
+}

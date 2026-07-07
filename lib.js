@@ -9681,7 +9681,7 @@ function updateMixerRun(e = false) {
 					if (session.labelsize) {
 						fontsize = (fontsize * session.labelsize) / 100;
 					}
-					label.style.fontSize = parseInt(fontsize) + "px";
+					label.style.fontSize = session.labelstyle === "toprounded" ? "16px" : parseInt(fontsize) + "px";
 				}
 
 				if ((
@@ -9780,7 +9780,7 @@ function updateMixerRun(e = false) {
 							if (session.labelsize) {
 								fontsize = (fontsize * session.labelsize) / 100;
 							}
-							holder.label.style.fontSize = parseInt(fontsize) + "px";
+							holder.label.style.fontSize = session.labelstyle === "toprounded" ? "16px" : parseInt(fontsize) + "px";
 						}
 						holder.label.innerHTML = labelContent
 							.map(item => `<span>${escapeHtml(String(item.value))}</span>`)
