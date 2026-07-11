@@ -13371,6 +13371,15 @@ async function makeImages(startup = false) {
 var updateUserListTimeout = null;
 var updateUserListActive = false;
 function updateUserList() {
+	// Couple Room owns participant presence and chat UI. VDO's hidden-user list
+	// otherwise surfaces data-only peers as an "Unknown User" popup over video.
+	if (urlParams.has("coupleroom")) {
+		var connectUsers = getById("connectUsers");
+		var closedConnectUsers = getById("closedList_connectUsers");
+		if (connectUsers) connectUsers.style.display = "none";
+		if (closedConnectUsers) closedConnectUsers.style.display = "none";
+		return;
+	}
 	if (session.showList === true) {
 		// continue
 	} else if (session.showList !== true && (session.cleanOutput || session.scene !== false || !session.roomid || session.director || session.showList === false)) {
@@ -64826,7 +64835,11 @@ function setupCommands() {
 		return raisehand();
 	};
 	commands.togglescreenshare = function (value = null, value2 = null) {
-		toggleScreenShare();
+		// Couple Room and other room clients must use the configured screen-share
+		// strategy. Calling toggleScreenShare() directly forces the legacy type-1
+		// path, which replaces the camera track and is unstable in WKWebView. The
+		// decider preserves the room default/type-3 secondary stream instead.
+		screenshareTypeDecider(session.screenshareType || (session.roomid ? 3 : 1));
 		return session.screenShareState;
 	};
 	commands.chat = function (value = null, value2 = null) {
