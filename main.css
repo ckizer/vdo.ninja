@@ -1846,6 +1846,9 @@ button.btnArmTransferRoom.selected{
 }
 
 html {
+	width: 100%;
+	height: 100%;
+	background-color: #000;
 	border: 0;
 	margin: 0;
 	outline: 0;
@@ -2801,17 +2804,23 @@ span[data-action-type="stats-graphs-details-container"]>span{
 	margin: 1.8%;
 	text-align: center;
 }
-#container-1 {
-	background-repeat: no-repeat;
-	background-size: 80px;
-	background-position: 50% 65%;
-	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='342.728' height='325.878' viewBox='0 0 90.68 86.222' fill='none' stroke='%23000' stroke-width='5.6' stroke-linejoin='round' stroke-dashoffset='22.7149601' xmlns:v='https://vecta.io/nano'%3E%3Cpath d='M3.15 3.15h37.378v35.24H3.15zm47.002 0H87.53v35.24H50.152zM3.15 47.832h37.378v35.24H3.15zm47.002 0H87.53v35.24H50.152z'/%3E%3C/svg%3E");
+.couple-room-card-icon {
+	position: absolute;
+	top: 65%;
+	left: 50%;
+	display: block;
+	width: 56px;
+	height: 56px;
+	filter: brightness(0);
+	transform: translate(-50%, -50%);
+	pointer-events: none;
 }
-#container-2 {
-	background-repeat: no-repeat;
-	background-size: 80px;
-	background-position: 50% 67%;
-	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='347.569' height='278.797' viewBox='0 0 91.961 73.765' fill='none' stroke='%23000' xmlns:v='https://vecta.io/nano'%3E%3Cpath d='M3.02 3.02h85.921v54.399H3.02z' stroke-width='6.04' stroke-linejoin='round' stroke-dashoffset='22.7149601'/%3E%3Cg stroke-width='6.3'%3E%3Cpath d='M35.607 70.527l21.839.071' stroke-linecap='round' paint-order='markers fill stroke'/%3E%3Cpath d='M46.404 73.517l.142-15.596' paint-order='markers fill stroke'/%3E%3C/g%3E%3C/svg%3E");
+#container-2 > .couple-room-card-icon {
+	top: 67%;
+}
+.column.card.skip-animation > .couple-room-card-icon,
+.column.card.in-animation > .couple-room-card-icon {
+	display: none;
 }
 .mainScreenShareButton {
 	padding: 18px;
@@ -2965,24 +2974,11 @@ span[data-action-type="stats-graphs-details-container"]>span{
     color: #ff9999;
 }
 
-#container-3 {
-	background-repeat: no-repeat;
-	background-size: 90px;
-	transition: background-image 0.3s ease-in-out;
-	background-position: 50% 65%;
-	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='347.184' height='187.007' viewBox='0 0 91.859 49.479' fill='none' stroke='%23000' stroke-width='5' stroke-linejoin='round' xmlns:v='https://vecta.io/nano'%3E%3Cpath d='M3.15 3.15h65.569v43.179H3.15z' stroke-dashoffset='22.7149601' paint-order='markers fill stroke'/%3E%3Cpath d='M68.919 28.837L88.709 44.73V7.148L69.019 22.341z'/%3E%3C/svg%3E");
-}
 #container-3a {
 	background-repeat: no-repeat;
 	background-size: 90px;
 	transition: background-image 0.3s ease-in-out;
 	background-position: 50% 65%;
-}
-#container-4 {
-	background-repeat: no-repeat;
-	background-size: 80px;
-	background-position: 50% 65%;
-	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='303.594' height='274.946' viewBox='0 0 80.326 72.746' fill='none' stroke='%23000' stroke-width='4.6' stroke-linejoin='round' stroke-dashoffset='6.01000023' xmlns:v='https://vecta.io/nano'%3E%3Cpath d='M2 51.27L78.326 2l-8.03 63.359-37.093-12.414z'/%3E%3Cpath d='M33.047 70.746l.157-17.802L78.326 2 33.203 52.944l10.314 3.39z'/%3E%3C/svg%3E");
 }
 #container-5 {
 	background-repeat: no-repeat;

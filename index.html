@@ -22,8 +22,16 @@
 		</script>
 		<style>
 			html {
-				background-color: #0000;
+				width: 100%;
+				height: 100%;
+				background-color: #000;
+				color-scheme: dark;
 				transition: opacity .1s linear;
+			}
+			body {
+				min-width: 100%;
+				min-height: 100%;
+				background-color: #000;
 			}
 		</style>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
@@ -371,6 +379,7 @@
 					<h2>
 						<span data-translate="add-group-chat">Create a Room</span>
 					</h2>
+					<img class="couple-room-card-icon" src="./media/couple-room/room-icon.svg" alt="" aria-hidden="true" />
 					<div class="container-inner">
 						<br />
 						<br />
@@ -535,6 +544,7 @@
 				<h2 id="add_camera">
 					<span data-translate="add-your-camera">Add your Camera to OBS</span>
 				</h2>
+				<img class="couple-room-card-icon" src="./media/couple-room/camera-icon.svg" alt="" aria-hidden="true" />
 				<div class="container-inner" id="add_camera_inner">
 					<br />
 					<p>
@@ -776,6 +786,7 @@
 				<h2 id="add_screen">
 					<span data-translate="remote-screenshare-obs">Remote Screenshare into OBS</span>
 				</h2>
+				<img class="couple-room-card-icon" src="./media/couple-room/screenshare-icon.svg" alt="" aria-hidden="true" />
 				<div class="container-inner">
 					<div class="screenshare-icon">
 						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 160">
@@ -875,6 +886,7 @@
 				<h2>
 					<span data-translate="create-reusable-invite">Create Reusable Invite</span>
 				</h2>
+				<img class="couple-room-card-icon" src="./media/couple-room/invite-icon.svg" alt="" aria-hidden="true" />
 				<div id="gencontent2" style="display:none; max-height: 100%;min-height: 90%;"></div>
 				<div id="gencontent" class="container-inner">
 					
@@ -1200,16 +1212,11 @@
 				<center>
 					<div class="infoblob">
 						<span data-translate="info-blob">
-							<h2>What is VDO.Ninja</h2>
+							<h2>Couple Room</h2>
 							<br />
 							<li>100% <b>free</b>; no downloads; no personal data collection; no sign-in</li>
 							<li>Bring live video from your smartphone, remote computer, or friends directly into OBS or other studio software.</li>
 							<li>We use cutting edge Peer-to-Peer forwarding technology that offers privacy and ultra-low latency</li>
-							<br />
-							<li>Youtube video 
-								<i class="lab la-youtube"></i>
-								<a title="Open a YouTube video demoing the basics of VDO.Ninja" href="https://www.youtube.com/watch?v=QaA_6aOP9z8&list=PLWodc2tCfAH1l_LDvEyxEqFf42hOBKqQM&index=1" alt="Youtube video demoing VDO.Ninja">Demoing it here</a>
-							</li>
 							
 							<br />
 							<i>
@@ -1228,10 +1235,6 @@
 							<span title="Made in Canada">🌱</span> Site last updated on May 10th. Development <a target="_blank" title="Open a page with recent VDO.Ninja development and feature updates" href="https://updates.vdo.ninja/">updates are here.</a> 
 							<br />
 							<br />
-							<h3>
-							   🛠 For support, join the <a href="https://discord.vdo.ninja" target="_blank">Discord <i class="lab la-discord"></i></a> or see the <a href="https://www.reddit.com/r/VDONinja/" target="_blank">sub-reddit <i class="lab la-reddit-alien"></i></a>. The <a href="https://docs.vdo.ninja/" target="_blank">documentation is here</a> and my personal email is <i>steve@seguin.email</i>
-							</h3> 
-							<a href="https://docs.vdo.ninja/steves-helper-apps/native-mobile-app-versions" target="_blank">
 						</span>
 					</div>
 				</center>
