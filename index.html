@@ -19,6 +19,9 @@
 			if (new URLSearchParams(window.location.search).has('podcast')) {
 				document.write('<style>#directorlayout,#controlButtons{display:none!important}</style>');
 			}
+			if (new URLSearchParams(window.location.search).has('coupleroom')) {
+				document.documentElement.classList.add('couple-room');
+			}
 		</script>
 		<style>
 			html {
@@ -32,6 +35,9 @@
 				min-width: 100%;
 				min-height: 100%;
 				background-color: #000;
+			}
+			html.couple-room #mainmenu {
+				visibility: hidden !important;
 			}
 		</style>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
