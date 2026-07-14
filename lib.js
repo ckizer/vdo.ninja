@@ -64828,6 +64828,28 @@ function safelyDecodeValue(value) { // since the layout can be a number, json, o
 function setupCommands() {
 	var commands = {};
 
+	commands.coupleRoomWallpaper = function (value = null, value2 = null) {
+		if (!urlParams.has("coupleroom")) return false;
+
+		var wallpapers = ["default", "sea", "purple", "camping", "space", "romance"];
+		var wallpaper = typeof value === "string" ? value : "default";
+		if (wallpapers.indexOf(wallpaper) === -1) return false;
+
+		if (wallpaper === "default") {
+			document.documentElement.style.removeProperty("--couple-room-wallpaper-image");
+		} else {
+			var image = 'url("./media/couple-room/wallpapers/' + wallpaper + '.webp")';
+			var overlay = "linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5))";
+			document.documentElement.style.setProperty(
+				"--couple-room-wallpaper-image",
+				overlay + ", " + image
+			);
+		}
+
+		document.documentElement.dataset.coupleRoomWallpaper = wallpaper;
+		return wallpaper;
+	};
+
 	commands.raisehand = function (value = null, value2 = null) {
 		return raisehand();
 	};
