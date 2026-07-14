@@ -1919,13 +1919,15 @@ body.darktheme{
 	margin: 20px;
 	padding: 10px 50px;
 }
-.gowebcam:enabled {
-	background-color: #26e726 !important;
-	background: radial-gradient(#26e726, #2EeF2E);
-	color: black!important;
+.gowebcam:enabled,
+.mainScreenShareButton:enabled {
+	background: linear-gradient(0deg, #00D540, #00D540), #FAFAFA !important;
+	box-shadow: 0 0 0 1px #08F043;
+	border: none;
+	border-radius: 12px;
+	animation: none;
+	color: black !important;
 	font-weight: bold !important;
-	box-shadow: 0 0 31px 0px #244e1c44;
-	animation: pulsate 2s ease-out infinite; 
 }
 #logoname {
 	transition: opacity 0.2s ease-in-out;
@@ -1966,6 +1968,16 @@ div[data-action-type='toggle-group'] {
 	padding: 20px;
 	max-width: 1280px;
 	text-align: var(--rtl-or-ltr);
+}
+
+.support-info {
+	margin-top: 24px;
+	font-size: 1.05rem;
+	line-height: 1.5;
+}
+
+.support-info p {
+	margin: 4px 0;
 }
 
 .outer {
@@ -2815,6 +2827,30 @@ span[data-action-type="stats-graphs-details-container"]>span{
 	transform: translate(-50%, -50%);
 	pointer-events: none;
 }
+
+/* Landing tiles: icon first, label underneath */
+.column.card:not(.skip-animation):not(.in-animation) {
+	display: inline-flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 18px;
+	vertical-align: top;
+}
+
+.column.card:not(.skip-animation):not(.in-animation) > .couple-room-card-icon {
+	position: static;
+	order: 1;
+	flex: 0 0 56px;
+	transform: none;
+}
+
+.column.card:not(.skip-animation):not(.in-animation) > h2 {
+	order: 2;
+	width: 100%;
+	margin: 0;
+}
+
 #container-2 > .couple-room-card-icon {
 	top: 67%;
 }
@@ -2824,18 +2860,8 @@ span[data-action-type="stats-graphs-details-container"]>span{
 }
 .mainScreenShareButton {
 	padding: 18px;
-    font-size: 120%;
-    margin: 16px;
-    animation: pulsate 2s ease-out infinite;
-	background-color: #26e726 !important;
-    background: radial-gradient(#26e726, #2EeF2E);
-    box-shadow: 1px 1px 1px;
-	color: black !important;
-	background-color: #26e726 !important;
-    background: radial-gradient(#26e726, #2EeF2E);
-	font-weight: bold !important;
-    box-shadow: 0 0 31px 0px #244e1c44;
-    animation: pulsate 2s ease-out infinite;
+	font-size: 120%;
+	margin: 16px;
 }
 .screenshare-container {
     max-width: 600px;
@@ -7405,6 +7431,17 @@ input[type="text"], input[type="search"], input[type="number"], select {
     border-radius: 10px;
     padding: 6px 10px;
 }
+
+input:not([type]),
+input[type="text"],
+input[type="search"],
+input[type="url"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+textarea {
+	border-radius: 12px !important;
+}
 .darktheme input[type="text"],
 .darktheme input[type="search"],
 .darktheme input[type="number"],
@@ -7633,13 +7670,43 @@ a.soloLink:hover {
 
 /* 10) Header glass — subtle and safe */
 #header {
-    background-color: rgba(15, 19, 29, 0.60) !important;
-    backdrop-filter: blur(6px) saturate(120%);
-    -webkit-backdrop-filter: blur(6px) saturate(120%);
-    border-bottom: 1px solid rgba(255,255,255,0.06);
+	background-color: rgba(15, 19, 29, 0.60) !important;
+	backdrop-filter: blur(6px) saturate(120%);
+	-webkit-backdrop-filter: blur(6px) saturate(120%);
+	border-bottom: 1px solid rgba(255,255,255,0.06);
+	box-sizing: border-box;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 64px;
+	padding: 8px 5px;
+}
+#header #head1 {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	padding: 0;
+}
+#header #joinroomID + button {
+	margin: 0;
+}
+#header #joinroomID,
+#header #jumptoroomButton {
+	box-sizing: border-box;
+	height: 40px;
+	font-size: 16px;
+}
+#header #joinroomID {
+	padding-left: 20px;
+	padding-right: 20px;
+}
+#header #jumptoroomButton {
+	padding-left: 20px;
+	padding-right: 20px;
 }
 .darktheme #header {
-    background-color: rgba(14, 17, 24, 0.60) !important;
+	background-color: rgba(14, 17, 24, 0.60) !important;
 }
 
 /* 11) Chat module glass and cohesion */
@@ -7722,13 +7789,45 @@ input[type="range"]::-moz-range-progress { height: 6px; background: var(--accent
 .column.card:not(.skip-animation):not(.in-animation) { overflow-y: hidden !important; }
 
 /* 25) Create a Room (#container-1) — reduce boldness, improve contrast */
-.darktheme #container-1 th b,
-.darktheme #container-1 td b { font-weight: 400 !important; }
+#container-1 > .container-inner { color: #111 !important; }
+#container-1 th b,
+#container-1 td b { font-weight: 400 !important; }
+#container-1 th,
+#container-1 td,
+#container-1 label { color: #111 !important; }
+#container-1 [data-translate="guests-only-see-director"],
+#container-1 [data-translate="scenes-can-see-director"] { color: #111 !important; font-weight: 400 !important; }
+.darktheme #container-1 > .container-inner,
 .darktheme #container-1 th,
 .darktheme #container-1 td,
-.darktheme #container-1 label { color: #fff !important; }
+.darktheme #container-1 label,
 .darktheme #container-1 [data-translate="guests-only-see-director"],
-.darktheme #container-1 [data-translate="scenes-can-see-director"] { color: #fff !important; font-weight: 400 !important; }
+.darktheme #container-1 [data-translate="scenes-can-see-director"] { color: #fff !important; }
+
+/* 26) Expanded setup panels — keep labels readable on light surfaces */
+body:not(.darktheme) .container-inner {
+	color: #111 !important;
+}
+
+body:not(.darktheme) .container-inner .title,
+body:not(.darktheme) .container-inner label,
+body:not(.darktheme) .container-inner .invite_setting_group_links {
+	color: #111 !important;
+}
+
+body:not(.darktheme) .container-inner .info-box h3,
+body:not(.darktheme) .container-inner .info-box ul {
+	color: #374151;
+}
+
+.darktheme .container-inner,
+.darktheme .container-inner .title,
+.darktheme .container-inner label,
+.darktheme .container-inner .invite_setting_group_links,
+.darktheme .container-inner .info-box h3,
+.darktheme .container-inner .info-box ul {
+	color: var(--discord-text) !important;
+}
 
 .invite_setting_group {
 	padding: 20px;
