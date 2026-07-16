@@ -9565,18 +9565,6 @@ async function main() {
 		}
 
 		if ("close" in e.data || "hangup" in e.data) {
-			if (urlParams.has("coupleroom") && isIFrame) {
-				try {
-					parent.postMessage(
-						{
-							action: "couple-room-hangup",
-							type: "couple-room.hangup",
-							reason: "parent-command"
-						},
-						session.iframetarget
-					);
-				} catch (e) {}
-			}
 			// disconnect and hangup all inbound streams.
 			var tmp = e.data.close || e.data.hangup;
 			if (tmp == "estop") {

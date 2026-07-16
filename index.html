@@ -36,24 +36,6 @@
 				min-height: 100%;
 				background-color: #000;
 			}
-			html.couple-room #mainmenu {
-				visibility: hidden !important;
-			}
-			html.couple-room {
-				background-color: #000;
-			}
-			html.couple-room body,
-			html.couple-room #container {
-				background-color: transparent !important;
-			}
-			html.couple-room #gridlayout,
-			html.couple-room #directorlayout {
-				background-color: transparent !important;
-				background-image: var(--couple-room-wallpaper-image, none) !important;
-				background-position: center !important;
-				background-repeat: no-repeat !important;
-				background-size: cover !important;
-			}
 		</style>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 		<meta content="text/html;charset=utf-8" http-equiv="Content-Type" />
@@ -78,6 +60,7 @@
 		<meta name="msapplication-TileColor" content="#da532c" />
 		<meta name="theme-color" content="#0f131d" />
 		<link rel="stylesheet" href="./main.css?ver=4041" />
+		<link rel="stylesheet" href="./couple-room.css?ver=1" />
 		<script type="text/javascript" crossorigin="anonymous" src="./thirdparty/adapter.js"></script>
 		
 		<link rel="shortcut icon" href="data:image/x-icon;," type="image/x-icon" />
@@ -3323,103 +3306,6 @@
 			
 			console.log("->> Note: Do not paste code into this console unless from a trusted source <<--")
 
-			(function () {
-				try {
-					var coupleRoomParams = new URLSearchParams(window.location.search);
-					if (!coupleRoomParams.has("coupleroom")) {
-						return;
-					}
-					document.documentElement.classList.add("couple-room");
-					var hiddenUserMenu = document.getElementById("connectUsers");
-					var hiddenUserMenuToggle = document.getElementById("closedList_connectUsers");
-					if (hiddenUserMenu) hiddenUserMenu.remove();
-					if (hiddenUserMenuToggle) hiddenUserMenuToggle.remove();
-
-					var coupleRoomHangupSent = false;
-					function notifyCoupleRoomHangup(reason) {
-						if (coupleRoomHangupSent || !window.parent || window.parent === window) {
-							return;
-						}
-						coupleRoomHangupSent = true;
-						window.parent.postMessage(
-							{
-								action: "couple-room-hangup",
-								type: "couple-room.hangup",
-								reason: reason || "vdo-hangup"
-							},
-							"*"
-						);
-					}
-
-					function hasVisibleHangupContainer() {
-						var nodes = document.querySelectorAll("#hangupContainer");
-						for (var i = 0; i < nodes.length; i++) {
-							var node = nodes[i];
-							var style = window.getComputedStyle(node);
-							if (
-								style.display !== "none" &&
-								style.visibility !== "hidden" &&
-								node.getClientRects().length > 0
-							) {
-								return true;
-							}
-						}
-						return false;
-					}
-
-					function positionCoupleRoomVideoLabels() {
-						var labels = document.querySelectorAll(".holder .video-label.toprounded");
-						for (var i = 0; i < labels.length; i++) {
-							var label = labels[i];
-							var holder = label.closest(".holder");
-							var video = holder && holder.querySelector("video");
-							var offsetParent = label.offsetParent;
-							if (!video || !offsetParent) {
-								continue;
-							}
-
-							var videoRect = video.getBoundingClientRect();
-							var parentRect = offsetParent.getBoundingClientRect();
-							var contentLeft = videoRect.left;
-							var contentTop = videoRect.top;
-							var contentWidth = videoRect.width;
-							var contentHeight = videoRect.height;
-							var fit = window.getComputedStyle(video).objectFit;
-
-							if (
-								(fit === "contain" || fit === "scale-down") &&
-								video.videoWidth &&
-								video.videoHeight &&
-								videoRect.width &&
-								videoRect.height
-							) {
-								var sourceRatio = video.videoWidth / video.videoHeight;
-								var boxRatio = videoRect.width / videoRect.height;
-								if (boxRatio > sourceRatio) {
-									contentWidth = videoRect.height * sourceRatio;
-									contentLeft += (videoRect.width - contentWidth) / 2;
-								} else {
-									contentHeight = videoRect.width / sourceRatio;
-									contentTop += (videoRect.height - contentHeight) / 2;
-								}
-							}
-
-							label.style.setProperty("top", Math.max(0, contentTop - parentRect.top + 6) + "px", "important");
-							label.style.setProperty("left", Math.max(0, contentLeft - parentRect.left + 6) + "px", "important");
-							label.style.setProperty("max-width", Math.max(0, contentWidth - 12) + "px", "important");
-							label.style.setProperty("transform", "none", "important");
-						}
-					}
-
-					window.setInterval(function () {
-						if (hasVisibleHangupContainer()) {
-							notifyCoupleRoomHangup("vdo-hangup-screen");
-						}
-						positionCoupleRoomVideoLabels();
-					}, 300);
-				} catch (e) {}
-			})();
-
 			
 			////   Are you wanting general site password protection for your self-deployment?
 			////   * You can also use HTTP Basic Authorization within your Web Server for more security
@@ -3566,6 +3452,7 @@
 
 		<script type="text/javascript" crossorigin="anonymous" id="lib-js" src="./lib.js?ver=14171"></script>
 		<script type="text/javascript" crossorigin="anonymous" id="main-js" src="./main.js?ver=1067"></script>
+		<script type="text/javascript" crossorigin="anonymous" id="couple-room-js" src="./couple-room.js?ver=1"></script>
 		<script type="module" src="./podcast/bootstrap.js"></script>
 		
 	</body>

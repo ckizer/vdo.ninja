@@ -12,3 +12,4 @@ package.json
 !thirdparty/mediapipe/tasks-vision/package.json
 docs.md
 .vercel
+room/

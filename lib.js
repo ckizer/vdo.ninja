@@ -13371,15 +13371,6 @@ async function makeImages(startup = false) {
 var updateUserListTimeout = null;
 var updateUserListActive = false;
 function updateUserList() {
-	// Couple Room owns participant presence and chat UI. VDO's hidden-user list
-	// otherwise surfaces data-only peers as an "Unknown User" popup over video.
-	if (urlParams.has("coupleroom")) {
-		var connectUsers = getById("connectUsers");
-		var closedConnectUsers = getById("closedList_connectUsers");
-		if (connectUsers) connectUsers.style.display = "none";
-		if (closedConnectUsers) closedConnectUsers.style.display = "none";
-		return;
-	}
 	if (session.showList === true) {
 		// continue
 	} else if (session.showList !== true && (session.cleanOutput || session.scene !== false || !session.roomid || session.director || session.showList === false)) {
@@ -51657,23 +51648,12 @@ function replaceURLs(message) {
 }
 
 function getChatMessage(msg, label = false, director = false, overlay = false, UUID = false) {
-	var coupleRoomBridgePrefix = "__COUPLE_ROOM_EVENT__:";
-	var coupleRoomBridgeMessage = false;
-	try {
-		coupleRoomBridgeMessage =
-			typeof urlParams !== "undefined" &&
-			urlParams.has("coupleroom") &&
-			msg.indexOf(coupleRoomBridgePrefix) === 0;
-	} catch (e) {
-		coupleRoomBridgeMessage = false;
-	}
-
-	msg = sanitizeChat(msg, coupleRoomBridgeMessage ? 4096 : 500); // keep it clean.
+	msg = sanitizeChat(msg); // keep it clean.
 	if (msg == "") {
 		return;
 	}
 
-	if (session.sessionLog && !coupleRoomBridgeMessage) {
+	if (session.sessionLog) {
 		var chatSource = label ? sanitizeLabel(label) : (director ? "Director" : "Someone");
 		pushSessionLogEntry("chat", chatSource, msg);
 	}
@@ -51692,24 +51672,6 @@ function getChatMessage(msg, label = false, director = false, overlay = false, U
 		if (UUID in session.rpcs) {
 			apiBlob.streamID = session.rpcs[UUID].streamID || false;
 		}
-	}
-
-	if (coupleRoomBridgeMessage) {
-		data.msg = msg;
-		data.label = label ? sanitizeLabel(label) : "";
-		data.type = "recv";
-
-		if (isIFrame) {
-			parent.postMessage(
-				{
-					gotChat: data,
-					chat: data,
-					coupleRoomEvent: true
-				},
-				session.iframetarget
-			);
-		}
-		return;
 	}
 
 	const streamFallbackLabel = (!label && session.director && UUID && session.rpcs[UUID] && session.rpcs[UUID].streamID)
@@ -64828,28 +64790,6 @@ function safelyDecodeValue(value) { // since the layout can be a number, json, o
 function setupCommands() {
 	var commands = {};
 
-	commands.coupleRoomWallpaper = function (value = null, value2 = null) {
-		if (!urlParams.has("coupleroom")) return false;
-
-		var wallpapers = ["default", "sea", "purple", "camping", "space", "romance"];
-		var wallpaper = typeof value === "string" ? value : "default";
-		if (wallpapers.indexOf(wallpaper) === -1) return false;
-
-		if (wallpaper === "default") {
-			document.documentElement.style.removeProperty("--couple-room-wallpaper-image");
-		} else {
-			var image = 'url("./media/couple-room/wallpapers/' + wallpaper + '.webp")';
-			var overlay = "linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5))";
-			document.documentElement.style.setProperty(
-				"--couple-room-wallpaper-image",
-				overlay + ", " + image
-			);
-		}
-
-		document.documentElement.dataset.coupleRoomWallpaper = wallpaper;
-		return wallpaper;
-	};
-
 	commands.raisehand = function (value = null, value2 = null) {
 		return raisehand();
 	};
@@ -64857,11 +64797,7 @@ function setupCommands() {
 		return raisehand();
 	};
 	commands.togglescreenshare = function (value = null, value2 = null) {
-		// Couple Room and other room clients must use the configured screen-share
-		// strategy. Calling toggleScreenShare() directly forces the legacy type-1
-		// path, which replaces the camera track and is unstable in WKWebView. The
-		// decider preserves the room default/type-3 secondary stream instead.
-		screenshareTypeDecider(session.screenshareType || (session.roomid ? 3 : 1));
+		toggleScreenShare();
 		return session.screenShareState;
 	};
 	commands.chat = function (value = null, value2 = null) {
