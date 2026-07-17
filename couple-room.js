@@ -5,7 +5,7 @@
   if (!params.has("coupleroom")) return;
 
   var PROTOCOL_VERSION = 1;
-  var ADAPTER_VERSION = "1.0.0";
+  var ADAPTER_VERSION = "1.1.0";
   var PREFIX = "__COUPLE_ROOM_EVENT__:";
   var nonce = params.get("coupleroomnonce") || "";
   var opaqueParent = params.get("coupleroomopaque") === "1";
@@ -17,6 +17,8 @@
   var lastStateSignature = "";
   var originalGetChatMessage = window.getChatMessage;
   var originalUpdateUserList = window.updateUserList;
+  var tileIds = new WeakMap();
+  var tileIdSequence = 0;
 
   document.documentElement.classList.add("couple-room");
 
@@ -96,14 +98,38 @@
     if (!command || typeof command !== "object" || Array.isArray(command)) return false;
     var keys = Object.keys(command);
     if (!keys.length || keys.some(function (key) { return !allowedRawKeys[key]; })) return false;
-    if (command.action && ["togglescreenshare", "coupleRoomWallpaper"].indexOf(command.action) === -1) return false;
+    if (command.action && ["togglescreenshare", "coupleRoomWallpaper", "coupleRoomLayout"].indexOf(command.action) === -1) return false;
     if (command.sendChat && (typeof command.sendChat !== "string" || command.sendChat.length > 4096)) return false;
+    if (command.action === "coupleRoomLayout" && !validLayoutValue(command.value)) return false;
     return true;
+  }
+
+  function validLayoutValue(value) {
+    if (!value || typeof value !== "object" || ["auto", "custom"].indexOf(value.mode) === -1) return false;
+    if (!Array.isArray(value.placements) || value.placements.length > 30) return false;
+    return value.placements.every(function (placement) {
+      if (!placement || typeof placement !== "object") return false;
+      if (typeof placement.tileId !== "string" || !placement.tileId || placement.tileId.length > 180) return false;
+      if (!placement.bounds || typeof placement.bounds !== "object") return false;
+      var values = [
+        placement.bounds.x,
+        placement.bounds.y,
+        placement.bounds.width,
+        placement.bounds.height
+      ];
+      if (!values.every(function (number) { return Number.isFinite(number) && number >= 0 && number <= 1; })) return false;
+      if (["cover", "contain"].indexOf(placement.fit) === -1) return false;
+      return Number.isFinite(placement.zIndex) && placement.zIndex >= 0 && placement.zIndex <= 100;
+    });
   }
 
   function executeCommand(command, event) {
     if (!allowedCommand(command)) {
       post("command.rejected", { reason: "forbidden-command" });
+      return;
+    }
+    if (command.action === "coupleRoomLayout") {
+      setLayout(command.value);
       return;
     }
     if ((command.close || command.hangup) && !hangupSent) notifyHangup("parent-command");
@@ -176,8 +202,119 @@
     return wallpaper;
   }
 
+  var currentLayout = { mode: "auto", placements: [] };
+
+  function stableTileId(container, video, order) {
+    if (tileIds.has(container)) return tileIds.get(container);
+    var streamId = video && video.dataset && (video.dataset.sid || video.dataset.streamid);
+    var uuid = video && video.dataset && (video.dataset.UUID || video.dataset.uuid);
+    var kind = container.classList.contains("is-screenshare") ? "screen" : "camera";
+    var identity = String(streamId || uuid || container.id || order).slice(0, 120);
+    var tileId = kind + ":" + identity + ":" + (++tileIdSequence);
+    tileIds.set(container, tileId);
+    return tileId;
+  }
+
+  function tileContainers() {
+    return Array.prototype.slice.call(document.querySelectorAll(".container_holder_video")).filter(function (container) {
+      var video = container.querySelector("video");
+      if (!video) return false;
+      if (container.id === "minipreview") return false;
+      if (video.id === "previewWebcam" || video.closest("#previewWebcamContainer")) return false;
+      return true;
+    });
+  }
+
+  function cleanTileChrome() {
+    tileContainers().forEach(function (container) {
+      var video = container.querySelector("video");
+      if (video) video.removeAttribute("title");
+    });
+  }
+
+  function clearContainerLayout(container) {
+    [
+      "--couple-room-x",
+      "--couple-room-y",
+      "--couple-room-width",
+      "--couple-room-height",
+      "--couple-room-z"
+    ].forEach(function (property) {
+      container.style.removeProperty(property);
+    });
+    delete container.dataset.coupleRoomPlaced;
+    var video = container.querySelector("video");
+    if (video) video.style.removeProperty("--couple-room-fit");
+  }
+
+  function setVariable(element, property, value) {
+    if (element.style.getPropertyValue(property) === value) return;
+    element.style.setProperty(property, value);
+  }
+
+  function applyCurrentLayout() {
+    var containers = tileContainers();
+    var byId = {};
+    containers.forEach(function (container, order) {
+      var video = container.querySelector("video");
+      var tileId = stableTileId(container, video, order);
+      container.dataset.coupleRoomTileId = tileId;
+      byId[tileId] = { container: container, video: video };
+    });
+
+    if (currentLayout.mode !== "custom") {
+      containers.forEach(clearContainerLayout);
+      document.documentElement.dataset.coupleRoomLayout = "auto";
+      return;
+    }
+
+    document.documentElement.dataset.coupleRoomLayout = "custom";
+    var placedIds = {};
+    currentLayout.placements.forEach(function (placement) {
+      var target = byId[placement.tileId];
+      if (!target) return;
+      placedIds[placement.tileId] = true;
+      var bounds = placement.bounds;
+      target.container.dataset.coupleRoomPlaced = "1";
+      setVariable(target.container, "--couple-room-x", (bounds.x * 100) + "%");
+      setVariable(target.container, "--couple-room-y", (bounds.y * 100) + "%");
+      setVariable(target.container, "--couple-room-width", (bounds.width * 100) + "%");
+      setVariable(target.container, "--couple-room-height", (bounds.height * 100) + "%");
+      setVariable(target.container, "--couple-room-z", String(placement.zIndex || 1));
+      if (target.video) setVariable(target.video, "--couple-room-fit", placement.fit);
+    });
+    Object.keys(byId).forEach(function (tileId) {
+      if (!placedIds[tileId]) clearContainerLayout(byId[tileId].container);
+    });
+  }
+
+  function setLayout(value) {
+    if (!validLayoutValue(value)) return false;
+    currentLayout = {
+      mode: value.mode,
+      placements: value.placements.map(function (placement) {
+        return {
+          tileId: placement.tileId,
+          order: placement.order,
+          bounds: {
+            x: placement.bounds.x,
+            y: placement.bounds.y,
+            width: placement.bounds.width,
+            height: placement.bounds.height
+          },
+          fit: placement.fit,
+          zIndex: placement.zIndex
+        };
+      })
+    };
+    applyCurrentLayout();
+    scheduleRefresh();
+    return true;
+  }
+
   if (window.Commands) {
     window.Commands.coupleRoomWallpaper = setWallpaper;
+    window.Commands.coupleRoomLayout = setLayout;
     window.Commands.togglescreenshare = function () {
       screenshareTypeDecider(session.screenshareType || (session.roomid ? 3 : 1));
       return session.screenShareState;
@@ -245,6 +382,7 @@
       if (!video || !offsetParent) continue;
       var videoRect = video.getBoundingClientRect();
       var parentRect = offsetParent.getBoundingClientRect();
+      var labelInset = holder.querySelector(".video-mute-state") ? 56 : 6;
       var contentLeft = videoRect.left;
       var contentTop = videoRect.top;
       var contentWidth = videoRect.width;
@@ -262,8 +400,8 @@
         }
       }
       setImportant(label, "top", Math.max(0, contentTop - parentRect.top + 6) + "px");
-      setImportant(label, "left", Math.max(0, contentLeft - parentRect.left + 6) + "px");
-      setImportant(label, "max-width", Math.max(0, contentWidth - 12) + "px");
+      setImportant(label, "left", Math.max(0, contentLeft - parentRect.left + labelInset) + "px");
+      setImportant(label, "max-width", Math.max(0, contentWidth - labelInset - 6) + "px");
     }
   }
 
@@ -298,22 +436,23 @@
   }
 
   function collectTiles() {
-    return Array.prototype.map.call(document.querySelectorAll(".holder"), function (holder, order) {
-      var video = holder.querySelector("video");
+    return tileContainers().map(function (container, order) {
+      var holder = container.querySelector(".holder") || container;
+      var video = container.querySelector("video");
       var label = holder.querySelector(".video-label");
-      var idValue = holder.id || (video && video.id) || "tile-" + order;
+      var idValue = stableTileId(container, video, order);
       var fit = video ? window.getComputedStyle(video).objectFit : "none";
       return {
         id: idValue,
-        participantId: holder.dataset.uuid || undefined,
-        streamId: holder.dataset.streamid || (video && video.dataset.streamid) || undefined,
-        mediaKind: /screen/i.test(idValue) ? "screen" : video ? "camera" : "unknown",
-        visible: holder.getClientRects().length > 0,
+        participantId: (video && video.dataset && (video.dataset.UUID || video.dataset.uuid)) || holder.dataset.uuid || undefined,
+        streamId: (video && video.dataset && (video.dataset.sid || video.dataset.streamid)) || holder.dataset.streamid || undefined,
+        mediaKind: container.classList.contains("is-screenshare") ? "screen" : video ? "camera" : "unknown",
+        visible: container.getClientRects().length > 0,
         muted: Boolean(video && video.muted),
         fit: ["cover", "contain", "fill", "scale-down", "none"].indexOf(fit) >= 0 ? fit : "none",
         order: order,
         label: label ? label.textContent.slice(0, 120) : undefined,
-        bounds: normalizedBounds(holder)
+        bounds: normalizedBounds(container)
       };
     });
   }
@@ -381,6 +520,8 @@
   function refresh() {
     framePending = false;
     removeHiddenUsers();
+    cleanTileChrome();
+    applyCurrentLayout();
     positionLabels();
     if (hasVisibleHangup()) notifyHangup("vdo-hangup-screen");
     emitSnapshots();
@@ -396,9 +537,14 @@
     childList: true,
     subtree: true,
     attributes: true,
-    attributeFilter: ["class", "style", "data-streamid", "data-uuid"]
+    attributeFilter: ["class", "style", "data-streamid", "data-uuid", "data-sid"]
   });
   window.addEventListener("resize", scheduleRefresh);
+  document.addEventListener("contextmenu", function (event) {
+    if (event.target && event.target.closest && event.target.closest(".container_holder_video")) {
+      event.preventDefault();
+    }
+  }, true);
   window.addEventListener("beforeunload", function () { notifyHangup("page-unload"); });
   removeHiddenUsers();
   scheduleRefresh();
