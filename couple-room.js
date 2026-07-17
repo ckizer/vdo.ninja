@@ -372,6 +372,22 @@
     element.style.setProperty(property, value, "important");
   }
 
+  function hasVisibleMuteState(holder) {
+    var muteStates = holder.querySelectorAll(".video-mute-state");
+    for (var i = 0; i < muteStates.length; i += 1) {
+      var muteState = muteStates[i];
+      var styles = window.getComputedStyle(muteState);
+      if (
+        styles.display !== "none"
+        && styles.visibility !== "hidden"
+        && muteState.getClientRects().length > 0
+      ) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   function positionLabels() {
     var labels = document.querySelectorAll(".holder .video-label.toprounded");
     for (var i = 0; i < labels.length; i += 1) {
@@ -382,7 +398,7 @@
       if (!video || !offsetParent) continue;
       var videoRect = video.getBoundingClientRect();
       var parentRect = offsetParent.getBoundingClientRect();
-      var labelInset = holder.querySelector(".video-mute-state") ? 56 : 6;
+      var labelInset = hasVisibleMuteState(holder) ? 56 : 6;
       var contentLeft = videoRect.left;
       var contentTop = videoRect.top;
       var contentWidth = videoRect.width;
