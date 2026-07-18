@@ -466,6 +466,9 @@
         visible: container.getClientRects().length > 0,
         muted: Boolean(video && video.muted),
         fit: ["cover", "contain", "fill", "scale-down", "none"].indexOf(fit) >= 0 ? fit : "none",
+        aspectRatio: video && video.videoWidth > 0 && video.videoHeight > 0
+          ? video.videoWidth / video.videoHeight
+          : undefined,
         order: order,
         label: label ? label.textContent.slice(0, 120) : undefined,
         bounds: normalizedBounds(container)
