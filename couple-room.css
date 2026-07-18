@@ -53,13 +53,45 @@ html.couple-room .container_holder_video > .holder {
   border-radius: 12px !important;
   object-fit: cover !important;
   overflow: hidden !important;
-  box-shadow: none !important;
 }
 
 html.couple-room .container_holder_video > .holder > video {
   border: 0 !important;
   border-radius: 12px !important;
   object-fit: cover !important;
+}
+
+/*
+ * VDO writes #4444 onto the tile container while it is hovered so the native
+ * enlarge/select affordance reads as active. Couple Room keeps that behavior,
+ * but does not paint the dark hover tint over camera or screen-share tiles.
+ */
+html.couple-room .container_holder_video {
+  background-color: transparent !important;
+}
+
+/*these are the shadows outside the window and the 1px dark border outside video */
+html.couple-room .container_holder_video.is-not-screenshare {
+  /* Add local camera-feed styles here. */
+  box-shadow: 0px 12px 15px -3px rgba(9, 9, 11, 0.2),
+  0px 5px 6px -4px rgba(0, 0, 0, 0.35),
+  0px 0px 0px 1px rgba(0, 0, 0, 0.05) !important;
+  border-radius: 12px !important;
+}
+
+/* this adds the inset 1px shadow over video feeds */
+html.couple-room .container_holder_video.is-not-screenshare > .holder::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+  border-radius: 12px;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+}
+
+html.couple-room .container_holder_video.is-not-screenshare video {
+    background: #666 !important;
 }
 
 html.couple-room[data-couple-room-layout="custom"] .container_holder_video[data-couple-room-placed="1"] {
@@ -109,6 +141,22 @@ html.couple-room[data-couple-room-layout="custom"] .container_holder_video[data-
   object-fit: var(--couple-room-fit, cover) !important;
 }
 
+/*
+ * Mirrored hardware video can expose its background along one edge when a
+ * fractional CSS size lands between physical pixels. Overscan camera video by
+ * one pixel per edge; the holder clips the excess and hides that compositor seam.
+ */
+html.couple-room[data-couple-room-layout="custom"]
+  .container_holder_video.is-not-screenshare[data-couple-room-placed="1"]
+  > .holder
+  > video {
+  width: calc(100% + 2px) !important;
+  height: calc(100% + 2px) !important;
+  max-width: none !important;
+  max-height: none !important;
+  flex: 0 0 auto !important;
+}
+
 html.couple-room .video-label,
 html.couple-room .video-label.toprounded,
 html.couple-room .video-label.rounded,
@@ -125,17 +173,23 @@ html.couple-room .video-label.toprounded * {
 html.couple-room .video-label,
 html.couple-room .video-label.toprounded {
   position: absolute !important;
-  top: 6px !important;
+  top: 5px !important;
   bottom: auto !important;
-  left: 6px !important;
+  left: 5px !important;
   width: auto !important;
+  height: 30.4px !important;
   min-width: 0 !important;
-  max-width: calc(100% - 12px) !important;
+  max-width: calc(100% - 10px) !important;
+  margin: 0 !important;
   padding: 4px 10px !important;
   transform: none !important;
+  border: 0 !important;
   border-radius: 8px !important;
   background: rgba(0, 0, 0, 0.56) !important;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2) !important;
+  color: #fff !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  backdrop-filter: blur(12px) !important;
   text-align: left !important;
   white-space: nowrap !important;
 }
