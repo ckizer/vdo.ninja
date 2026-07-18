@@ -1,6 +1,55 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
   "cleanUrls": false,
   "trailingSlash": false,
+  "redirects": [
+    {
+      "source": "/room",
+      "has": [
+        {
+          "type": "host",
+          "value": "lessapart\\.app"
+        }
+      ],
+      "destination": "https://lessapart.app/",
+      "permanent": true
+    },
+    {
+      "source": "/room",
+      "has": [
+        {
+          "type": "host",
+          "value": "vdoninja\\.vercel\\.app"
+        }
+      ],
+      "destination": "https://lessapart.app/",
+      "permanent": true
+    }
+  ],
+  "routes": [
+    {
+      "src": "^/$",
+      "has": [
+        {
+          "type": "host",
+          "value": "lessapart\\.app"
+        }
+      ],
+      "missing": [
+        {
+          "type": "query",
+          "key": "coupleroom"
+        }
+      ],
+      "dest": "/room/index.html",
+      "headers": {
+        "Content-Security-Policy": "default-src 'self'; script-src 'self' 'unsafe-inline' https://sdk.scdn.co https://www.youtube.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; media-src 'self' blob: https:; connect-src 'self' https: wss:; frame-src 'self' https://sdk.scdn.co https://www.youtube.com https://www.youtube-nocookie.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'",
+        "Permissions-Policy": "camera=(self), microphone=(self), display-capture=(self), fullscreen=(self), encrypted-media=(self \"https://sdk.scdn.co\"), autoplay=(self \"https://sdk.scdn.co\")",
+        "Referrer-Policy": "no-referrer",
+        "X-Content-Type-Options": "nosniff"
+      }
+    }
+  ],
   "headers": [
     {
       "source": "/room",
