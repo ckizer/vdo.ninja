@@ -2,6 +2,11 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "cleanUrls": false,
   "trailingSlash": false,
+  "functions": {
+    "api/lobby.mjs": {
+      "maxDuration": 300
+    }
+  },
   "redirects": [
     {
       "source": "/room",

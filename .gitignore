@@ -13,3 +13,4 @@ package.json
 docs.md
 .vercel
 room/
+api/lobby.mjs
