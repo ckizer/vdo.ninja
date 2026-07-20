@@ -48,8 +48,8 @@
       ],
       "dest": "/room/index.html",
       "headers": {
-        "Content-Security-Policy": "default-src 'self'; script-src 'self' 'unsafe-inline' https://sdk.scdn.co https://www.youtube.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; media-src 'self' blob: https:; connect-src 'self' https: wss:; frame-src 'self' https://sdk.scdn.co https://www.youtube.com https://www.youtube-nocookie.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'",
-        "Permissions-Policy": "camera=(self), microphone=(self), display-capture=(self), fullscreen=(self), encrypted-media=(self \"https://sdk.scdn.co\"), autoplay=(self \"https://sdk.scdn.co\")",
+        "Content-Security-Policy": "default-src 'self'; script-src 'self' 'unsafe-inline' https://sdk.scdn.co https://www.youtube.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; media-src 'self' blob: https:; connect-src 'self' https: wss:; frame-src 'self' https://lessapart.com https://sdk.scdn.co https://www.youtube.com https://www.youtube-nocookie.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'",
+        "Permissions-Policy": "camera=(self), microphone=(self), display-capture=(self), fullscreen=(self), encrypted-media=(self \"https://sdk.scdn.co\" \"https://lessapart.com\"), autoplay=(self \"https://sdk.scdn.co\" \"https://lessapart.com\")",
         "Referrer-Policy": "no-referrer",
         "X-Content-Type-Options": "nosniff"
       }
@@ -61,11 +61,11 @@
       "headers": [
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://sdk.scdn.co https://www.youtube.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; media-src 'self' blob: https:; connect-src 'self' https: wss:; frame-src 'self' https://sdk.scdn.co https://www.youtube.com https://www.youtube-nocookie.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'"
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://sdk.scdn.co https://www.youtube.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; media-src 'self' blob: https:; connect-src 'self' https: wss:; frame-src 'self' https://lessapart.com https://sdk.scdn.co https://www.youtube.com https://www.youtube-nocookie.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'"
         },
         {
           "key": "Permissions-Policy",
-          "value": "camera=(self), microphone=(self), display-capture=(self), fullscreen=(self), encrypted-media=(self \"https://sdk.scdn.co\"), autoplay=(self \"https://sdk.scdn.co\")"
+          "value": "camera=(self), microphone=(self), display-capture=(self), fullscreen=(self), encrypted-media=(self \"https://sdk.scdn.co\" \"https://lessapart.com\"), autoplay=(self \"https://sdk.scdn.co\" \"https://lessapart.com\")"
         },
         {
           "key": "Referrer-Policy",
@@ -82,11 +82,11 @@
       "headers": [
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://sdk.scdn.co https://www.youtube.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; media-src 'self' blob: https:; connect-src 'self' https: wss:; frame-src 'self' https://sdk.scdn.co https://www.youtube.com https://www.youtube-nocookie.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'"
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://sdk.scdn.co https://www.youtube.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; media-src 'self' blob: https:; connect-src 'self' https: wss:; frame-src 'self' https://lessapart.com https://sdk.scdn.co https://www.youtube.com https://www.youtube-nocookie.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'"
         },
         {
           "key": "Permissions-Policy",
-          "value": "camera=(self), microphone=(self), display-capture=(self), fullscreen=(self), encrypted-media=(self \"https://sdk.scdn.co\"), autoplay=(self \"https://sdk.scdn.co\")"
+          "value": "camera=(self), microphone=(self), display-capture=(self), fullscreen=(self), encrypted-media=(self \"https://sdk.scdn.co\" \"https://lessapart.com\"), autoplay=(self \"https://sdk.scdn.co\" \"https://lessapart.com\")"
         },
         {
           "key": "Referrer-Policy",
