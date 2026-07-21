@@ -19,8 +19,29 @@
   var originalUpdateUserList = window.updateUserList;
   var tileIds = new WeakMap();
   var tileIdSequence = 0;
+  var hoveredTileId = null;
 
   document.documentElement.classList.add("couple-room");
+
+  function reportHoveredTile(tileId) {
+    if (hoveredTileId === tileId) return;
+    hoveredTileId = tileId;
+    post("tile.hover", { tileId: tileId });
+  }
+
+  document.addEventListener("pointermove", function (event) {
+    var target = event.target;
+    var container = target && typeof target.closest === "function"
+      ? target.closest(".container_holder_video")
+      : null;
+    reportHoveredTile(container && container.dataset.coupleRoomTileId || null);
+  }, { passive: true });
+  document.addEventListener("pointerleave", function () {
+    reportHoveredTile(null);
+  });
+  window.addEventListener("blur", function () {
+    reportHoveredTile(null);
+  });
 
   function id() {
     if (crypto.randomUUID) return crypto.randomUUID();

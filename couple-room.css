@@ -103,11 +103,7 @@ html.couple-room[data-couple-room-layout="custom"] .container_holder_video[data-
   height: var(--couple-room-height) !important;
   z-index: var(--couple-room-z, 1) !important;
   transform: none !important;
-  transition:
-    left 220ms cubic-bezier(.2, .8, .2, 1),
-    top 220ms cubic-bezier(.2, .8, .2, 1),
-    width 220ms cubic-bezier(.2, .8, .2, 1),
-    height 220ms cubic-bezier(.2, .8, .2, 1) !important;
+  transition: none !important;
 }
 
 html.couple-room[data-couple-room-layout="custom"] .container_holder_video:not([data-couple-room-placed="1"]) {
