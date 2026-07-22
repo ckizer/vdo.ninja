@@ -393,22 +393,6 @@
     element.style.setProperty(property, value, "important");
   }
 
-  function hasVisibleMuteState(holder) {
-    var muteStates = holder.querySelectorAll(".video-mute-state");
-    for (var i = 0; i < muteStates.length; i += 1) {
-      var muteState = muteStates[i];
-      var styles = window.getComputedStyle(muteState);
-      if (
-        styles.display !== "none"
-        && styles.visibility !== "hidden"
-        && muteState.getClientRects().length > 0
-      ) {
-        return true;
-      }
-    }
-    return false;
-  }
-
   function positionLabels() {
     var labels = document.querySelectorAll(".holder .video-label.toprounded");
     for (var i = 0; i < labels.length; i += 1) {
@@ -419,7 +403,6 @@
       if (!video || !offsetParent) continue;
       var videoRect = video.getBoundingClientRect();
       var parentRect = offsetParent.getBoundingClientRect();
-      var labelInset = hasVisibleMuteState(holder) ? 56 : 6;
       var contentLeft = videoRect.left;
       var contentTop = videoRect.top;
       var contentWidth = videoRect.width;
@@ -436,9 +419,10 @@
           contentTop += (videoRect.height - contentHeight) / 2;
         }
       }
-      setImportant(label, "top", Math.max(0, contentTop - parentRect.top + 6) + "px");
-      setImportant(label, "left", Math.max(0, contentLeft - parentRect.left + labelInset) + "px");
-      setImportant(label, "max-width", Math.max(0, contentWidth - labelInset - 6) + "px");
+      setImportant(label, "top", "auto");
+      setImportant(label, "bottom", Math.max(0, parentRect.bottom - contentTop - contentHeight + 5) + "px");
+      setImportant(label, "left", Math.max(0, contentLeft - parentRect.left + 5) + "px");
+      setImportant(label, "max-width", Math.max(0, contentWidth - 10) + "px");
     }
   }
 
