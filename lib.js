@@ -18344,6 +18344,15 @@ function toggleControlBar() {
 	}
 }
 
+function broadcastMicrophoneMuteState() {
+	var data = {};
+	data.muteState = session.muted;
+	session.sendMessage(data);
+	log("SEND MUTE STATE TO PEERS");
+	pokeIframeAPI("mic-mute-state", session.muted);
+	pokeAPI("muted", session.muted);
+}
+
 function toggleMute(apply = false, event = false) {
 	// TODO: I need to have this be MUTE, toggle, with volume not touched.
 
@@ -18461,12 +18470,7 @@ function toggleMute(apply = false, event = false) {
 
 	if (!apply) {
 		// only if they are changing states do we bother to spam.
-		var data = {};
-		data.muteState = session.muted;
-		session.sendMessage(data);
-		log("SEND MUTE STATE TO PEERS");
-		pokeIframeAPI("mic-mute-state", session.muted);
-		pokeAPI("muted", session.muted);
+		broadcastMicrophoneMuteState();
 	}
 }
 
@@ -19549,6 +19553,23 @@ function toggleAutoVideoMute() {
 	}
 }
 
+function broadcastVideoMuteState() {
+	if (session.avatar && session.avatar.ready) {
+		updateRenderOutpipe();
+		if (session.videoMuted) {
+			var avatarMessage = {};
+			avatarMessage.videoMuted = false; // doesn't matter the actual mute state; this is the avatar
+			session.sendMessage(avatarMessage);
+		}
+	} else {
+		var message = {};
+		message.videoMuted = session.videoMuted;
+		session.sendMessage(message);
+	}
+	pokeIframeAPI("video-mute-state", session.videoMuted || session.remoteVideoMuted);
+	pokeAPI("videoMuted", session.videoMuted || session.remoteVideoMuted);
+}
+
 function toggleVideoMute(apply = false) {
 	// TODO: I need to have this be MUTE, toggle, with volume not touched.
 	if (apply) {
@@ -19606,23 +19627,10 @@ function toggleVideoMute(apply = false) {
 		}
 	}
 
-	if (session.avatar && session.avatar.ready && !apply) {
-		updateRenderOutpipe();
-		if (session.videoMuted) {
-			var msg = {};
-			msg.videoMuted = false; // doesn't matter the actual mute state; this is the avatar
-			session.sendMessage(msg);
-		}
-	} else if (!apply) {
-		var msg = {};
-		msg.videoMuted = session.videoMuted;
-		session.sendMessage(msg);
-	}
-
-	pokeIframeAPI("video-mute-state", session.videoMuted || session.remoteVideoMuted);
-
 	if (!apply) {
-		pokeAPI("videoMuted", session.videoMuted || session.remoteVideoMuted);
+		broadcastVideoMuteState();
+	} else {
+		pokeIframeAPI("video-mute-state", session.videoMuted || session.remoteVideoMuted);
 	}
 
 	if (session.style && session.style == 1) {
@@ -64829,11 +64837,13 @@ function setupCommands() {
 			session.muted = false; // set
 			log(session.muted);
 			toggleMute(true); // apply
+			broadcastMicrophoneMuteState();
 		} else if (value === false) {
 			// mute
 			session.muted = true; // set
 			log(session.muted);
 			toggleMute(true); // apply
+			broadcastMicrophoneMuteState();
 		} else if (value === "toggle") {
 			// toggle
 			toggleMute();
@@ -64846,11 +64856,13 @@ function setupCommands() {
 			session.videoMuted = false; // set
 			log(session.videoMuted);
 			toggleVideoMute(true); // apply
+			broadcastVideoMuteState();
 		} else if (value === false) {
 			// mute
 			session.videoMuted = true; // set
 			log(session.videoMuted);
 			toggleVideoMute(true); // apply
+			broadcastVideoMuteState();
 		} else if (value === "toggle") {
 			// toggle
 			toggleVideoMute();
@@ -64877,11 +64889,13 @@ function setupCommands() {
 			session.videoMuted = false; // set
 			log(session.videoMuted);
 			toggleVideoMute(true); // apply
+			broadcastVideoMuteState();
 		} else if (value === false) {
 			// mute
 			session.videoMuted = true; // set
 			log(session.videoMuted);
 			toggleVideoMute(true); // apply
+			broadcastVideoMuteState();
 		} else if (value === "toggle") {
 			// toggle
 			toggleVideoMute();

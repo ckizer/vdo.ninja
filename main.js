@@ -8748,11 +8748,13 @@ async function main() {
 				session.muted = false; // set
 				log(session.muted);
 				toggleMute(true); // apply
+				broadcastMicrophoneMuteState();
 			} else if (e.data.mic === false) {
 				// mute
 				session.muted = true; // set
 				log(session.muted);
 				toggleMute(true); // apply
+				broadcastMicrophoneMuteState();
 			} else if (e.data.mic === "toggle") {
 				// toggle
 				toggleMute();
@@ -8778,11 +8780,13 @@ async function main() {
 				session.videoMuted = false; // set
 				log(session.videoMuted);
 				toggleVideoMute(true); // apply
+				broadcastVideoMuteState();
 			} else if (e.data.camera === false) {
 				// mute
 				session.videoMuted = true; // set
 				log(session.videoMuted);
 				toggleVideoMute(true); // apply
+				broadcastVideoMuteState();
 			} else if (e.data.camera === "toggle") {
 				// toggle
 				toggleVideoMute();

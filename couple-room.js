@@ -527,7 +527,7 @@
         streamId: peer.streamID || undefined,
         label: String(peer.label || peer.streamID || "Partner").slice(0, 120),
         role: peer.screenShare ? "screen" : "guest",
-        audio: peer.audio === false ? "absent" : peer.muted ? "muted" : "live",
+        audio: peer.audio === false ? "absent" : peer.remoteMuteState ? "muted" : "live",
         video: peer.video === false ? "absent" : peer.videoMuted ? "muted" : "live",
         connection: peer.closed ? "closed" : peer.reconnecting ? "reconnecting" : peer.connected === false ? "connecting" : "connected"
       });
