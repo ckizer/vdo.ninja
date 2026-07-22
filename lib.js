@@ -50596,15 +50596,19 @@ function pauseVideo(videoEle, update = true) {
 			mediaElement.removeAttribute("controls");
 			mediaElement.setAttribute("controls", "");
 			mediaElement.controls = true;
-			taskItemInContext.controls = mediaElement.controls;
+			mediaElement.classList.remove("couple-room-controls-hidden");
+			mediaElement.coupleRoomControlsHidden = false;
+			taskItemInContext.coupleRoomControlsHidden = false;
 
 		} else if (link.getAttribute("data-action") === "HideControls") {
 			var mediaElement = resolveMediaContextElement(taskItemInContext);
 
 			//taskItemInContext.showControlBar = false;
-			mediaElement.controls = false;
-			mediaElement.removeAttribute("controls");
-			taskItemInContext.controls = mediaElement.controls;
+			mediaElement.controls = true;
+			mediaElement.setAttribute("controls", "");
+			mediaElement.classList.add("couple-room-controls-hidden");
+			mediaElement.coupleRoomControlsHidden = true;
+			taskItemInContext.coupleRoomControlsHidden = true;
 
 		} else if (link.getAttribute("data-action") === "Edit") {
 			//copyFunction(taskItemInContext.href);
@@ -50802,13 +50806,13 @@ function pauseVideo(videoEle, update = true) {
 					items[i].parentNode.classList.add("hidden");
 				}
 			} else if (items[i].getAttribute("data-action") === "Controls") {
-				if (taskItemInContext.controls) {
+				if (taskItemInContext.controls && !taskItemInContext.coupleRoomControlsHidden) {
 					items[i].parentNode.classList.add("hidden");
 				} else {
 					items[i].parentNode.classList.remove("hidden");
 				}
 			} else if (items[i].getAttribute("data-action") === "HideControls") {
-				if (taskItemInContext.controls) {
+				if (taskItemInContext.controls && !taskItemInContext.coupleRoomControlsHidden) {
 					items[i].parentNode.classList.remove("hidden");
 				} else {
 					items[i].parentNode.classList.add("hidden");

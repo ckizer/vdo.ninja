@@ -20,6 +20,8 @@
   var tileIds = new WeakMap();
   var tileIdSequence = 0;
   var hoveredTileId = null;
+  var spaceDragPressed = false;
+  var localAudioMuted = false;
 
   document.documentElement.classList.add("couple-room");
 
@@ -27,6 +29,17 @@
     if (hoveredTileId === tileId) return;
     hoveredTileId = tileId;
     post("tile.hover", { tileId: tileId });
+  }
+
+  function setSpaceDragCursor(pressed) {
+    document.documentElement.classList.toggle("couple-room-space-drag", pressed);
+  }
+
+  function reportSpaceDrag(pressed) {
+    setSpaceDragCursor(pressed);
+    if (spaceDragPressed === pressed) return;
+    spaceDragPressed = pressed;
+    post("tile.space", { pressed: pressed });
   }
 
   document.addEventListener("pointermove", function (event) {
@@ -39,6 +52,20 @@
   document.addEventListener("pointerleave", function () {
     reportHoveredTile(null);
   });
+  document.addEventListener("keydown", function (event) {
+    if (event.code !== "Space") return;
+    var target = event.target;
+    if (target && (target.isContentEditable || /^(INPUT|TEXTAREA|SELECT|BUTTON)$/.test(target.tagName))) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    reportSpaceDrag(true);
+  }, true);
+  document.addEventListener("keyup", function (event) {
+    if (event.code !== "Space") return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    reportSpaceDrag(false);
+  }, true);
   window.addEventListener("blur", function () {
     reportHoveredTile(null);
   });
@@ -119,9 +146,10 @@
     if (!command || typeof command !== "object" || Array.isArray(command)) return false;
     var keys = Object.keys(command);
     if (!keys.length || keys.some(function (key) { return !allowedRawKeys[key]; })) return false;
-    if (command.action && ["togglescreenshare", "coupleRoomWallpaper", "coupleRoomLayout"].indexOf(command.action) === -1) return false;
+    if (command.action && ["togglescreenshare", "coupleRoomWallpaper", "coupleRoomLayout", "coupleRoomSpaceDrag"].indexOf(command.action) === -1) return false;
     if (command.sendChat && (typeof command.sendChat !== "string" || command.sendChat.length > 4096)) return false;
     if (command.action === "coupleRoomLayout" && !validLayoutValue(command.value)) return false;
+    if (command.action === "coupleRoomSpaceDrag" && typeof command.value !== "boolean") return false;
     return true;
   }
 
@@ -152,6 +180,14 @@
     if (command.action === "coupleRoomLayout") {
       setLayout(command.value);
       return;
+    }
+    if (command.action === "coupleRoomSpaceDrag") {
+      setSpaceDragCursor(command.value);
+      return;
+    }
+    if (typeof command.mic === "boolean") {
+      localAudioMuted = !command.mic;
+      scheduleRefresh();
     }
     if ((command.close || command.hangup) && !hangupSent) notifyHangup("parent-command");
     if (session && typeof session.remoteInterfaceAPI === "function") {
@@ -426,6 +462,49 @@
     }
   }
 
+  function remoteAudioIsMuted(video, muteState) {
+    var uuid = video && video.dataset && (video.dataset.UUID || video.dataset.uuid);
+    var peer = uuid && window.session && session.rpcs && session.rpcs[uuid];
+    if (peer && typeof peer.remoteMuteState !== "undefined") {
+      return Boolean(peer.remoteMuteState);
+    }
+    return Boolean(
+      muteState
+      && !muteState.classList.contains("hidden")
+      && !muteState.classList.contains("hidden2")
+      && !muteState.classList.contains("unmuted")
+    );
+  }
+
+  function syncRemoteMuteDecorations() {
+    var containers = document.querySelectorAll(".container_holder_video.is-not-screenshare");
+    for (var i = 0; i < containers.length; i += 1) {
+      var container = containers[i];
+      var holder = container.querySelector(".holder");
+      var video = holder && holder.querySelector("video");
+      if (!holder || !video) continue;
+
+      var muteStates = holder.querySelectorAll(".video-mute-state");
+      var muteState = null;
+      for (var j = 0; j < muteStates.length; j += 1) {
+        if (muteStates[j].querySelector(".la-microphone-slash")) {
+          muteState = muteStates[j];
+          muteState.classList.add("couple-room-native-mute-state");
+          break;
+        }
+      }
+
+      var muted = video.id === "videosource"
+        ? localAudioMuted
+        : remoteAudioIsMuted(video, muteState);
+      if (muted) {
+        container.dataset.coupleRoomAudioMuted = "1";
+      } else {
+        delete container.dataset.coupleRoomAudioMuted;
+      }
+    }
+  }
+
   function normalizedBounds(element) {
     var rect = element.getBoundingClientRect();
     var width = Math.max(1, window.innerWidth);
@@ -450,7 +529,7 @@
         role: peer.screenShare ? "screen" : "guest",
         audio: peer.audio === false ? "absent" : peer.muted ? "muted" : "live",
         video: peer.video === false ? "absent" : peer.videoMuted ? "muted" : "live",
-        connection: peer.closed ? "closed" : peer.connected === false ? "connecting" : "connected"
+        connection: peer.closed ? "closed" : peer.reconnecting ? "reconnecting" : peer.connected === false ? "connecting" : "connected"
       });
     });
     return participants;
@@ -547,6 +626,7 @@
     cleanTileChrome();
     applyCurrentLayout();
     positionLabels();
+    syncRemoteMuteDecorations();
     if (hasVisibleHangup()) notifyHangup("vdo-hangup-screen");
     emitSnapshots();
   }
