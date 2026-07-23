@@ -85,7 +85,6 @@
   }, true);
   window.addEventListener("blur", function () {
     reportHoveredTile(null);
-    reportOptionCrop(false);
   });
   document.addEventListener("visibilitychange", function () {
     if (document.visibilityState !== "visible") reportOptionCrop(false);
@@ -189,9 +188,10 @@
         placement.bounds.width,
         placement.bounds.height
       ];
-      if (!values.every(function (number) { return Number.isFinite(number) && number >= 0 && number <= 1; })) return false;
+      if (!values.every(function (number) { return Number.isFinite(number); })) return false;
       if (["cover", "contain"].indexOf(placement.fit) === -1) return false;
       if (!validCropInsets(placement.crop)) return false;
+      if (!validPlacementBounds(placement.bounds, placement.crop)) return false;
       return Number.isFinite(placement.zIndex) && placement.zIndex >= 0 && placement.zIndex <= 100;
     });
   }
@@ -204,6 +204,38 @@
       return Number.isFinite(crop[key]) && crop[key] >= 0 && crop[key] <= 1;
     })) return false;
     return crop.left + crop.right < 1 && crop.top + crop.bottom < 1;
+  }
+
+  function validPlacementBounds(bounds, crop) {
+    if (!crop) {
+      return bounds.x >= 0
+        && bounds.y >= 0
+        && bounds.width >= 0
+        && bounds.height >= 0
+        && bounds.x + bounds.width <= 1
+        && bounds.y + bounds.height <= 1;
+    }
+    if (
+      bounds.x < -32
+      || bounds.y < -32
+      || bounds.x > 1
+      || bounds.y > 1
+      || bounds.width <= 0
+      || bounds.height <= 0
+      || bounds.width > 32
+      || bounds.height > 32
+    ) return false;
+    var visibleX = bounds.x + bounds.width * crop.left;
+    var visibleY = bounds.y + bounds.height * crop.top;
+    var visibleWidth = bounds.width * (1 - crop.left - crop.right);
+    var visibleHeight = bounds.height * (1 - crop.top - crop.bottom);
+    var epsilon = 0.000001;
+    return visibleX >= -epsilon
+      && visibleY >= -epsilon
+      && visibleWidth > 0
+      && visibleHeight > 0
+      && visibleX + visibleWidth <= 1 + epsilon
+      && visibleY + visibleHeight <= 1 + epsilon;
   }
 
   function executeCommand(command, event) {
@@ -503,8 +535,18 @@
       var contentTop = videoRect.top;
       var contentWidth = videoRect.width;
       var contentHeight = videoRect.height;
+      var mediaWidth = video.style.getPropertyValue("--couple-room-media-width");
+      var mediaHeight = video.style.getPropertyValue("--couple-room-media-height");
+      var cropped = (mediaWidth && mediaWidth !== "100%") || (mediaHeight && mediaHeight !== "100%");
+      if (cropped) {
+        var holderRect = holder.getBoundingClientRect();
+        contentLeft = holderRect.left;
+        contentTop = holderRect.top;
+        contentWidth = holderRect.width;
+        contentHeight = holderRect.height;
+      }
       var fit = window.getComputedStyle(video).objectFit;
-      if ((fit === "contain" || fit === "scale-down") && video.videoWidth && video.videoHeight) {
+      if (!cropped && (fit === "contain" || fit === "scale-down") && video.videoWidth && video.videoHeight) {
         var sourceRatio = video.videoWidth / video.videoHeight;
         var boxRatio = videoRect.width / videoRect.height;
         if (boxRatio > sourceRatio) {
