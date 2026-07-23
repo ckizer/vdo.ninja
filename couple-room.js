@@ -208,12 +208,13 @@
 
   function validPlacementBounds(bounds, crop) {
     if (!crop) {
-      return bounds.x >= 0
-        && bounds.y >= 0
+      var uncroppedEpsilon = 0.000001;
+      return bounds.x >= -uncroppedEpsilon
+        && bounds.y >= -uncroppedEpsilon
         && bounds.width >= 0
         && bounds.height >= 0
-        && bounds.x + bounds.width <= 1
-        && bounds.y + bounds.height <= 1;
+        && bounds.x + bounds.width <= 1 + uncroppedEpsilon
+        && bounds.y + bounds.height <= 1 + uncroppedEpsilon;
     }
     if (
       bounds.x < -32
