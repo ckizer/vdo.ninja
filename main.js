@@ -9244,6 +9244,11 @@ async function main() {
 			changeAudioDevice(e.data.changeAudioDevice);
 		}
 
+		if ("changeAudioDeviceId" in e.data) {
+			warnlog(e.data.changeAudioDeviceId);
+			changeAudioDeviceById(e.data.changeAudioDeviceId);
+		}
+
 		if ("changeAudioOutputDevice" in e.data) {
 			warnlog(e.data.changeAudioOutputDevice);
 			changeAudioOutputDeviceById(e.data.changeAudioOutputDevice);
@@ -9261,6 +9266,11 @@ async function main() {
 					session.iframetarget
 				);
 			});
+		}
+
+		if ("getMediaSettings" in e.data) {
+			listVideoSettingsPrep();
+			listAudioSettingsPrep();
 		}
 
 		if ("sceneState" in e.data) {

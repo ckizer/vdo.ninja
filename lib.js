@@ -17516,6 +17516,33 @@ function printMyStats(menu, screenshare = false) {
 	} catch (e) { }
 }
 
+function updateRemoteInboundMediaStats(target, stat) {
+	if (!target || !stat) return;
+	var kind = stat.kind || stat.mediaType;
+	if (kind !== "audio" && kind !== "video") return;
+
+	var loss;
+	if (typeof stat.fractionLost === "number" && isFinite(stat.fractionLost)) {
+		loss = Math.max(0, stat.fractionLost * 100);
+	} else if (typeof stat.packetsLost === "number" && typeof stat.packetsReceived === "number") {
+		var lost = Math.max(0, stat.packetsLost);
+		var total = lost + Math.max(0, stat.packetsReceived);
+		if (total) loss = lost * 100 / total;
+	}
+	if (typeof loss === "number" && isFinite(loss)) {
+		target[kind + "_packet_loss_percentage"] = loss;
+		target.packet_loss_percentage = Math.max(
+			target.video_packet_loss_percentage || 0,
+			target.audio_packet_loss_percentage || 0
+		);
+	}
+
+	if (typeof stat.jitter === "number" && isFinite(stat.jitter)) {
+		target[kind + "_jitter_ms"] = Math.max(0, stat.jitter * 1000);
+		target.jitter_ms = Math.max(target.video_jitter_ms || 0, target.audio_jitter_ms || 0);
+	}
+}
+
 function updateLocalStats() {
 	if (!session) {
 		return;
@@ -17719,6 +17746,8 @@ function updateLocalStats() {
 										data.stats._bytesSentAudio = stat.bytesSent;
 									}
 								}
+							} else if (stat.type == "remote-inbound-rtp") {
+								updateRemoteInboundMediaStats(data.stats, stat);
 							} else if (stat.type == "remote-candidate") {
 								candidates[stat.id] = stat;
 								if (stat.candidateType != "relay") {
@@ -18071,6 +18100,8 @@ function updateLocalStats() {
 									session.pcs[UUID].stats._bytesSentAudio = stat.bytesSent;
 								}
 							}
+						} else if (stat.type == "remote-inbound-rtp") {
+							updateRemoteInboundMediaStats(session.pcs[UUID].stats, stat);
 						} else if (stat.type == "remote-candidate") {
 							candidates[stat.id] = stat;
 							if (stat.candidateType != "relay") {
@@ -21169,7 +21200,12 @@ function getQuickStats(sid = false) {
 
 		for (var i in session.rpcs) {
 			if (session.rpcs[i].streamID) {
-				stats.inbound[session.rpcs[i].streamID] = session.rpcs[i].stats;
+				// The live label can change after the connection stats snapshot was
+				// created. Export it alongside the snapshot so consumers do not show
+				// the stale join-time label.
+				stats.inbound[session.rpcs[i].streamID] = Object.assign({}, session.rpcs[i].stats || {}, {
+					label: session.rpcs[i].label || false
+				});
 			}
 		}
 		for (var i in session.pcs) {
