@@ -5,7 +5,7 @@
   if (!params.has("coupleroom")) return;
 
   var PROTOCOL_VERSION = 1;
-  var ADAPTER_VERSION = "1.1.0";
+  var ADAPTER_VERSION = "1.2.0";
   var PREFIX = "__COUPLE_ROOM_EVENT__:";
   var nonce = params.get("coupleroomnonce") || "";
   var opaqueParent = params.get("coupleroomopaque") === "1";
@@ -225,6 +225,7 @@
             tileState: true,
             layoutState: true,
             fileState: true,
+            statsInspection: true,
             originValidation: opaqueParent ? "source-and-nonce" : "exact"
           }
         }, event.data.id);
@@ -517,11 +518,65 @@
     };
   }
 
-  function collectParticipants() {
+  function statsInspectionPayload(target) {
+    if (!target || typeof target.closest !== "function") return null;
+    var container = target.closest(".container_holder_video");
+    var video = target.tagName === "VIDEO" ? target : (container && container.querySelector("video"));
+    if (!container || !video) return null;
+
+    var holder = container.querySelector(".holder") || container;
+    var uuid = (video.dataset && (video.dataset.UUID || video.dataset.uuid)) || holder.dataset.uuid || "";
+    var peer = uuid && window.session && session.rpcs && session.rpcs[uuid];
+    var local = video.id === "videosource" || video.id === "previewWebcam";
+    var streamId = local
+      ? (window.session && session.streamID || "")
+      : ((video.dataset && (video.dataset.sid || video.dataset.streamid)) || holder.dataset.streamid || (peer && peer.streamID) || "");
+    var labelNode = holder.querySelector(".video-label");
+    var label = String(
+      (labelNode && labelNode.textContent)
+      || (peer && peer.label)
+      || (local ? "Your camera" : "Partner")
+    ).trim().slice(0, 120);
+
+    return {
+      tileId: stableTileId(container, video, 0),
+      participantId: uuid || streamId || undefined,
+      streamId: streamId || undefined,
+      label: label || (local ? "Your camera" : "Partner"),
+      direction: local ? "outbound" : "inbound",
+      mediaKind: container.classList.contains("is-screenshare") ? "screen" : "camera",
+      bounds: normalizedBounds(container)
+    };
+  }
+
+  document.addEventListener("vdoninja:show-stats", function (event) {
+    var payload = statsInspectionPayload(event.target);
+    if (!payload || (!payload.participantId && !payload.streamId)) return;
+    event.preventDefault();
+    post("stats.inspect", payload);
+  });
+
+  var peersObservedInTiles = {};
+
+  function collectParticipants(tiles) {
     var participants = [];
     var peers = (window.session && session.rpcs) || {};
+    var liveTileIdentities = {};
+    tiles.forEach(function (tile) {
+      if (tile.participantId) liveTileIdentities[tile.participantId] = true;
+      if (tile.streamId) liveTileIdentities[tile.streamId] = true;
+    });
     Object.keys(peers).forEach(function (peerId) {
       var peer = peers[peerId] || {};
+      var hasLiveTile = Boolean(
+        liveTileIdentities[peerId]
+        || (peer.streamID && liveTileIdentities[peer.streamID])
+      );
+      if (hasLiveTile) peersObservedInTiles[peerId] = true;
+      // VDO can retain a disconnected RPC for its retry timeout after its tile
+      // has already been removed. Once a peer has owned a tile, the live tile
+      // roster is the authoritative membership signal for Couple Room.
+      if (peersObservedInTiles[peerId] && !hasLiveTile) return;
       participants.push({
         id: peerId,
         streamId: peer.streamID || undefined,
@@ -581,8 +636,8 @@
   }
 
   function emitSnapshots() {
-    var participants = collectParticipants();
     var tiles = collectTiles();
+    var participants = collectParticipants(tiles);
     var files = collectFiles();
     var phase = session && session.roomid
       ? (participants.length ? "connected" : "joining")

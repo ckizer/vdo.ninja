@@ -50647,14 +50647,20 @@ function pauseVideo(videoEle, update = true) {
 				}, 100);
 			}, taskItemInContext.href);
 		} else if (link.getAttribute("data-action") === "ShowStats") {
-			if (taskItemInContext.id == "videosource" || taskItemInContext.id == "previewWebcam") {
-				var [menu, innerMenu] = statsMenuCreator();
-				menu.interval = setInterval(printMyStats, session.statsInterval, innerMenu);
-				printMyStats(innerMenu);
-			} else if (taskItemInContext.dataset.UUID && taskItemInContext.dataset.UUID in session.rpcs) {
-				var [menu, innerMenu] = statsMenuCreator();
-				printViewStats(innerMenu, taskItemInContext.dataset.UUID);
-				menu.interval = setInterval(printViewStats, session.statsInterval, innerMenu, taskItemInContext.dataset.UUID);
+			var showStatsEvent = new CustomEvent("vdoninja:show-stats", {
+				bubbles: true,
+				cancelable: true
+			});
+			if (taskItemInContext.dispatchEvent(showStatsEvent)) {
+				if (taskItemInContext.id == "videosource" || taskItemInContext.id == "previewWebcam") {
+					var [menu, innerMenu] = statsMenuCreator();
+					menu.interval = setInterval(printMyStats, session.statsInterval, innerMenu);
+					printMyStats(innerMenu);
+				} else if (taskItemInContext.dataset.UUID && taskItemInContext.dataset.UUID in session.rpcs) {
+					var [menu, innerMenu] = statsMenuCreator();
+					printViewStats(innerMenu, taskItemInContext.dataset.UUID);
+					menu.interval = setInterval(printViewStats, session.statsInterval, innerMenu, taskItemInContext.dataset.UUID);
+				}
 			}
 		} else if (link.getAttribute("data-action") === "OutputAudio") {
 			enumerateDevices().then(function (deviceInfo) {
