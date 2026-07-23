@@ -133,8 +133,13 @@ html.couple-room[data-couple-room-layout="custom"] .container_holder_video[data-
 
 html.couple-room[data-couple-room-layout="custom"] .container_holder_video[data-couple-room-placed="1"] > .holder > video {
   display: block !important;
-  max-width: 100% !important;
-  max-height: 100% !important;
+  position: absolute !important;
+  left: var(--couple-room-media-left, 0%) !important;
+  top: var(--couple-room-media-top, 0%) !important;
+  width: var(--couple-room-media-width, 100%) !important;
+  height: var(--couple-room-media-height, 100%) !important;
+  max-width: none !important;
+  max-height: none !important;
   margin: 0 !important;
 }
 
@@ -151,8 +156,10 @@ html.couple-room[data-couple-room-layout="custom"]
   .container_holder_video.is-not-screenshare[data-couple-room-placed="1"]
   > .holder
   > video {
-  width: calc(100% + 2px) !important;
-  height: calc(100% + 2px) !important;
+  left: calc(var(--couple-room-media-left, 0%) - 1px) !important;
+  top: calc(var(--couple-room-media-top, 0%) - 1px) !important;
+  width: calc(var(--couple-room-media-width, 100%) + 2px) !important;
+  height: calc(var(--couple-room-media-height, 100%) + 2px) !important;
   max-width: none !important;
   max-height: none !important;
   flex: 0 0 auto !important;

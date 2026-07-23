@@ -5,7 +5,7 @@
   if (!params.has("coupleroom")) return;
 
   var PROTOCOL_VERSION = 1;
-  var ADAPTER_VERSION = "1.2.0";
+  var ADAPTER_VERSION = "1.3.0";
   var PREFIX = "__COUPLE_ROOM_EVENT__:";
   var nonce = params.get("coupleroomnonce") || "";
   var opaqueParent = params.get("coupleroomopaque") === "1";
@@ -21,6 +21,7 @@
   var tileIdSequence = 0;
   var hoveredTileId = null;
   var spaceDragPressed = false;
+  var optionCropPressed = false;
   var localAudioMuted = false;
 
   document.documentElement.classList.add("couple-room");
@@ -40,6 +41,12 @@
     if (spaceDragPressed === pressed) return;
     spaceDragPressed = pressed;
     post("tile.space", { pressed: pressed });
+  }
+
+  function reportOptionCrop(pressed) {
+    if (optionCropPressed === pressed) return;
+    optionCropPressed = pressed;
+    post("tile.option", { pressed: pressed });
   }
 
   document.addEventListener("pointermove", function (event) {
@@ -66,8 +73,22 @@
     event.stopImmediatePropagation();
     reportSpaceDrag(false);
   }, true);
+  document.addEventListener("keydown", function (event) {
+    if (event.key === "Alt" || event.code === "AltLeft" || event.code === "AltRight") {
+      reportOptionCrop(true);
+    }
+  }, true);
+  document.addEventListener("keyup", function (event) {
+    if (event.key === "Alt" || event.code === "AltLeft" || event.code === "AltRight" || !event.altKey) {
+      reportOptionCrop(false);
+    }
+  }, true);
   window.addEventListener("blur", function () {
     reportHoveredTile(null);
+    reportOptionCrop(false);
+  });
+  document.addEventListener("visibilitychange", function () {
+    if (document.visibilityState !== "visible") reportOptionCrop(false);
   });
 
   function id() {
@@ -170,8 +191,19 @@
       ];
       if (!values.every(function (number) { return Number.isFinite(number) && number >= 0 && number <= 1; })) return false;
       if (["cover", "contain"].indexOf(placement.fit) === -1) return false;
+      if (!validCropInsets(placement.crop)) return false;
       return Number.isFinite(placement.zIndex) && placement.zIndex >= 0 && placement.zIndex <= 100;
     });
+  }
+
+  function validCropInsets(crop) {
+    if (typeof crop === "undefined") return true;
+    if (!crop || typeof crop !== "object" || Array.isArray(crop)) return false;
+    var keys = ["top", "right", "bottom", "left"];
+    if (!keys.every(function (key) {
+      return Number.isFinite(crop[key]) && crop[key] >= 0 && crop[key] <= 1;
+    })) return false;
+    return crop.left + crop.right < 1 && crop.top + crop.bottom < 1;
   }
 
   function executeCommand(command, event) {
@@ -304,7 +336,17 @@
     });
     delete container.dataset.coupleRoomPlaced;
     var video = container.querySelector("video");
-    if (video) video.style.removeProperty("--couple-room-fit");
+    if (video) {
+      [
+        "--couple-room-fit",
+        "--couple-room-media-left",
+        "--couple-room-media-top",
+        "--couple-room-media-width",
+        "--couple-room-media-height"
+      ].forEach(function (property) {
+        video.style.removeProperty(property);
+      });
+    }
   }
 
   function setVariable(element, property, value) {
@@ -335,13 +377,22 @@
       if (!target) return;
       placedIds[placement.tileId] = true;
       var bounds = placement.bounds;
+      var crop = placement.crop || { top: 0, right: 0, bottom: 0, left: 0 };
+      var visibleWidth = 1 - crop.left - crop.right;
+      var visibleHeight = 1 - crop.top - crop.bottom;
       target.container.dataset.coupleRoomPlaced = "1";
-      setVariable(target.container, "--couple-room-x", (bounds.x * 100) + "%");
-      setVariable(target.container, "--couple-room-y", (bounds.y * 100) + "%");
-      setVariable(target.container, "--couple-room-width", (bounds.width * 100) + "%");
-      setVariable(target.container, "--couple-room-height", (bounds.height * 100) + "%");
+      setVariable(target.container, "--couple-room-x", ((bounds.x + bounds.width * crop.left) * 100) + "%");
+      setVariable(target.container, "--couple-room-y", ((bounds.y + bounds.height * crop.top) * 100) + "%");
+      setVariable(target.container, "--couple-room-width", (bounds.width * visibleWidth * 100) + "%");
+      setVariable(target.container, "--couple-room-height", (bounds.height * visibleHeight * 100) + "%");
       setVariable(target.container, "--couple-room-z", String(placement.zIndex || 1));
-      if (target.video) setVariable(target.video, "--couple-room-fit", placement.fit);
+      if (target.video) {
+        setVariable(target.video, "--couple-room-fit", placement.fit);
+        setVariable(target.video, "--couple-room-media-left", (-crop.left / visibleWidth * 100) + "%");
+        setVariable(target.video, "--couple-room-media-top", (-crop.top / visibleHeight * 100) + "%");
+        setVariable(target.video, "--couple-room-media-width", (100 / visibleWidth) + "%");
+        setVariable(target.video, "--couple-room-media-height", (100 / visibleHeight) + "%");
+      }
     });
     Object.keys(byId).forEach(function (tileId) {
       if (!placedIds[tileId]) clearContainerLayout(byId[tileId].container);
@@ -362,6 +413,12 @@
             width: placement.bounds.width,
             height: placement.bounds.height
           },
+          crop: placement.crop ? {
+            top: placement.crop.top,
+            right: placement.crop.right,
+            bottom: placement.crop.bottom,
+            left: placement.crop.left
+          } : undefined,
           fit: placement.fit,
           zIndex: placement.zIndex
         };
