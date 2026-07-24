@@ -5,8 +5,17 @@
   "functions": {
     "api/lobby.mjs": {
       "maxDuration": 300
+    },
+    "api/attachments.mjs": {
+      "maxDuration": 60
     }
   },
+  "crons": [
+    {
+      "path": "/api/attachments?action=cleanup",
+      "schedule": "17 5 * * *"
+    }
+  ],
   "redirects": [
     {
       "source": "/room",
