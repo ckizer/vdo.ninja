@@ -8,6 +8,9 @@
     },
     "api/attachments.mjs": {
       "maxDuration": 60
+    },
+    "api/liveblocks-auth.mjs": {
+      "maxDuration": 60
     }
   },
   "crons": [
