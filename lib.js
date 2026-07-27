@@ -50699,17 +50699,23 @@ function pauseVideo(videoEle, update = true) {
 				}
 			}
 		} else if (link.getAttribute("data-action") === "OutputAudio") {
-			enumerateDevices().then(function (deviceInfo) {
-				var ele = getById(taskItemInContext.id);
-
-				var deviceListElement = gotDevices3(deviceInfo, ele);
-				if (deviceListElement) {
-					warnUser("Select the audio playback destination for this media:\n\n");
-					getById("alertModalMessage").appendChild(deviceListElement);
-				} else {
-					warnUser("No output devices available");
-				}
+			var audioDestinationEvent = new CustomEvent("vdoninja:audio-destination", {
+				bubbles: true,
+				cancelable: true
 			});
+			if (taskItemInContext.dispatchEvent(audioDestinationEvent)) {
+				enumerateDevices().then(function (deviceInfo) {
+					var ele = getById(taskItemInContext.id);
+
+					var deviceListElement = gotDevices3(deviceInfo, ele);
+					if (deviceListElement) {
+						warnUser("Select the audio playback destination for this media:\n\n");
+						getById("alertModalMessage").appendChild(deviceListElement);
+					} else {
+						warnUser("No output devices available");
+					}
+				});
+			}
 
 			//
 		} else if (link.getAttribute("data-action") === "RemoteHangup") {
@@ -50993,6 +50999,7 @@ function checkVideoControlBar(ele) { // this is aggressive. Lets not use it unle
 }
 function gotDevices3(deviceInfos, vid) {
 	var audioEle = document.createElement("select");
+	var outputCount = 0;
 	log(deviceInfos);
 	if (!deviceInfos.length) {
 		return false;
@@ -51000,8 +51007,9 @@ function gotDevices3(deviceInfos, vid) {
 	for (let i = 0; i !== deviceInfos.length; ++i) {
 		if (deviceInfos[i].kind === "audiooutput") {
 			var opt = document.createElement("option");
-			opt.innerText = deviceInfos[i].label;
-			opt.value = deviceInfos[i].deviceId;
+			outputCount += 1;
+			opt.value = deviceInfos[i].deviceId || "default";
+			opt.innerText = deviceInfos[i].label || (opt.value === "default" ? "System default" : "Speaker " + outputCount);
 			audioEle.appendChild(opt);
 			audioEle.videoTarget = vid;
 			if (vid.sinkId) {
@@ -51018,6 +51026,9 @@ function gotDevices3(deviceInfos, vid) {
 				}
 			}
 		}
+	}
+	if (!outputCount) {
+		return false;
 	}
 	audioEle.onchange = function () {
 		vid.manualSink = this.options[this.selectedIndex].value;
@@ -51727,7 +51738,6 @@ function getChatMessage(msg, label = false, director = false, overlay = false, U
 			apiBlob.streamID = session.rpcs[UUID].streamID || false;
 		}
 	}
-
 	const streamFallbackLabel = (!label && session.director && UUID && session.rpcs[UUID] && session.rpcs[UUID].streamID)
 		? getPeerDisplayName(UUID, false, false)
 		: false;
