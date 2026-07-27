@@ -5,7 +5,7 @@
   if (!params.has("coupleroom")) return;
 
   var PROTOCOL_VERSION = 1;
-  var ADAPTER_VERSION = "1.8.0";
+  var ADAPTER_VERSION = "1.9.0";
   var PREFIX = "__COUPLE_ROOM_EVENT__:";
   var nonce = params.get("coupleroomnonce") || "";
   var opaqueParent = params.get("coupleroomopaque") === "1";
@@ -27,6 +27,8 @@
   var localAudioMuted = params.has("mute") || params.has("muted") || params.has("m");
   var audioDestinationRequest = null;
   var lastRaisedHand = null;
+  var remoteRaisedHandsByUuid = {};
+  var remoteRaisedHandsByLabel = {};
 
   document.documentElement.classList.add("couple-room");
 
@@ -675,6 +677,15 @@
     removeHiddenUsers();
   };
 
+  function normalizedHandLabel(label) {
+    var parser = document.createElement("div");
+    parser.innerHTML = String(label || "");
+    return String(parser.textContent || "")
+      .replace(/:$/, "")
+      .trim()
+      .toLowerCase();
+  }
+
   function handActivitySender(label, UUID) {
     var raw = label;
     if (UUID && session && session.rpcs && session.rpcs[UUID]) {
@@ -699,15 +710,35 @@
     element.dataset.coupleRoomHandIcon = "1";
   }
 
-  function setRemoteRaisedHand(UUID, raised) {
-    if (!UUID || !session || !session.rpcs || !session.rpcs[UUID]) return;
-    var peer = session.rpcs[UUID];
-    decorateRaisedHandElement(peer.remoteRaisedHandElement);
-    if (peer.remoteRaisedHandElement) {
-      peer.remoteRaisedHandElement.classList.toggle("hidden", !raised);
+  function resolveRemoteHandUuid(UUID, label) {
+    if (UUID && session && session.rpcs && session.rpcs[UUID]) return UUID;
+    if (!session || !session.rpcs) return null;
+    var labelKey = normalizedHandLabel(label);
+    var peerIds = Object.keys(session.rpcs);
+    for (var i = 0; i < peerIds.length; i += 1) {
+      var peer = session.rpcs[peerIds[i]];
+      if (peer && normalizedHandLabel(peer.label) === labelKey) return peerIds[i];
     }
-    var control = document.getElementById("hands_" + UUID);
-    if (control) control.classList.toggle("hidden", !raised);
+    return null;
+  }
+
+  function setRemoteRaisedHand(UUID, label, raised) {
+    var labelKey = normalizedHandLabel(label);
+    var resolvedUUID = resolveRemoteHandUuid(UUID, label);
+    if (labelKey) remoteRaisedHandsByLabel[labelKey] = raised;
+    if (resolvedUUID) {
+      remoteRaisedHandsByUuid[resolvedUUID] = raised;
+      var peer = session.rpcs[resolvedUUID];
+      decorateRaisedHandElement(peer.remoteRaisedHandElement);
+      if (peer.remoteRaisedHandElement) {
+        peer.remoteRaisedHandElement.classList.toggle("hidden", !raised);
+      }
+      var peerLabelKey = normalizedHandLabel(peer.label);
+      if (peerLabelKey) remoteRaisedHandsByLabel[peerLabelKey] = raised;
+      var control = document.getElementById("hands_" + resolvedUUID);
+      if (control) control.classList.toggle("hidden", !raised);
+    }
+    scheduleRefresh();
   }
 
   function decorateRaisedHandElements() {
@@ -721,7 +752,7 @@
     var handMessage = typeof msg === "string" ? msg.trim().toLowerCase() : "";
     if (handMessage === "raised hand" || handMessage === "lowered hand") {
       var raised = handMessage === "raised hand";
-      setRemoteRaisedHand(UUID, raised);
+      setRemoteRaisedHand(UUID, label, raised);
       post("hand.activity", {
         raised: raised,
         sender: handActivitySender(label, UUID),
@@ -877,11 +908,19 @@
       } else {
         var UUID = video.dataset && (video.dataset.UUID || video.dataset.uuid);
         var peer = UUID && session && session.rpcs && session.rpcs[UUID];
-        raised = Boolean(
-          peer
-          && peer.remoteRaisedHandElement
-          && !peer.remoteRaisedHandElement.classList.contains("hidden")
-        );
+        var label = holder.querySelector(".video-label");
+        var labelKey = normalizedHandLabel(label && label.textContent);
+        if (UUID && Object.prototype.hasOwnProperty.call(remoteRaisedHandsByUuid, UUID)) {
+          raised = remoteRaisedHandsByUuid[UUID];
+        } else if (labelKey && Object.prototype.hasOwnProperty.call(remoteRaisedHandsByLabel, labelKey)) {
+          raised = remoteRaisedHandsByLabel[labelKey];
+        } else {
+          raised = Boolean(
+            peer
+            && peer.remoteRaisedHandElement
+            && !peer.remoteRaisedHandElement.classList.contains("hidden")
+          );
+        }
       }
 
       if (raised) {
