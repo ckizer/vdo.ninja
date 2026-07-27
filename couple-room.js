@@ -24,7 +24,7 @@
   var hoveredTileId = null;
   var spaceDragPressed = false;
   var optionCropPressed = false;
-  var localAudioMuted = false;
+  var localAudioMuted = params.has("mute") || params.has("muted") || params.has("m");
   var audioDestinationRequest = null;
   var lastRaisedHand = null;
 
@@ -1081,8 +1081,40 @@
     post("hand.state", { raised: raised });
   }
 
+  function disableAudioTracks(stream) {
+    if (!stream || typeof stream.getAudioTracks !== "function") return;
+    stream.getAudioTracks().forEach(function (track) {
+      track.enabled = false;
+    });
+  }
+
+  function enforceLocalAudioMute() {
+    if (!localAudioMuted || typeof session === "undefined" || !session) return;
+
+    if (session.pendingMicRefreshTimeout) {
+      clearTimeout(session.pendingMicRefreshTimeout);
+      session.pendingMicRefreshTimeout = null;
+    }
+
+    if (session.muted !== true && typeof toggleMute === "function") {
+      session.muted = true;
+      toggleMute(true);
+      if (typeof broadcastMicrophoneMuteState === "function") {
+        broadcastMicrophoneMuteState();
+      }
+    } else {
+      session.muted = true;
+    }
+
+    // VDO can replace the local MediaStream after the shell has already
+    // applied its saved mute preference. Keep every replacement track muted.
+    disableAudioTracks(session.streamSrc);
+    disableAudioTracks(session.videoElement && session.videoElement.srcObject);
+  }
+
   function refresh() {
     framePending = false;
+    enforceLocalAudioMute();
     removeHiddenUsers();
     cleanTileChrome();
     applyCurrentLayout();
