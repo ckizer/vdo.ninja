@@ -11,6 +11,9 @@
     },
     "api/liveblocks-auth.mjs": {
       "maxDuration": 60
+    },
+    "api/meetings.mjs": {
+      "maxDuration": 60
     }
   },
   "crons": [
@@ -44,6 +47,17 @@
     }
   ],
   "routes": [
+    {
+      "src": "^/api/(?:public/)?meetings(?:/.*)?$",
+      "dest": "/api/meetings.mjs"
+    },
+    {
+      "src": "^/(?:schedule|m/[^/]+)/?$",
+      "dest": "/room/index.html",
+      "headers": {
+        "Cache-Control": "no-store, max-age=0, must-revalidate"
+      }
+    },
     {
       "src": "^/$",
       "has": [

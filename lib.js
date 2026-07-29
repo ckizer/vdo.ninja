@@ -3752,16 +3752,22 @@ var sanitizeRoomName = function (roomid) {
 		return roomid;
 	}
 
-	var sanitized = roomid.replace(/[\W]+/g, "_");
+	var coupleRoomMode = new URLSearchParams(window.location.search || "").has("coupleroom");
+	var sanitized = coupleRoomMode ? roomid.replace(/[^a-z0-9_-]+/gim, "_") : roomid.replace(/[\W]+/g, "_");
 	if (roomid.replace(/ /g, "_") !== sanitized) {
 		if (!session.cleanOutput) {
 			warnUser("Info: Only AlphaNumeric characters should be used for the room name.\n\nThe offending characters have been replaced by an underscore");
 		}
 	}
-	if (sanitized.length > 30) {
-		sanitized = sanitized.substring(0, 30);
+	var maxRoomNameLength = coupleRoomMode ? 64 : 30;
+	if (sanitized.length > maxRoomNameLength) {
+		sanitized = sanitized.substring(0, maxRoomNameLength);
 		if (!session.cleanOutput) {
-			warnUser("The Room name should be less than 31 alPhaNuMeric characters long.\n\nWe will trim it to length.");
+			warnUser(
+				coupleRoomMode
+					? "The Less Apart room identifier is too long.\n\nWe will trim it to length."
+					: "The Room name should be less than 31 alPhaNuMeric characters long.\n\nWe will trim it to length."
+			);
 		}
 	}
 	return sanitized;
