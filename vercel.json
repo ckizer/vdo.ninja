@@ -20,6 +20,10 @@
     {
       "path": "/api/attachments?action=cleanup",
       "schedule": "17 5 * * *"
+    },
+    {
+      "path": "/api/meetings/internal/google-calendar/drain",
+      "schedule": "*/5 * * * *"
     }
   ],
   "redirects": [
@@ -47,6 +51,10 @@
     }
   ],
   "routes": [
+    {
+      "src": "^/room/calendar/[^/]+$",
+      "dest": "/api/meetings.mjs"
+    },
     {
       "src": "^/api/(?:public/)?meetings(?:/.*)?$",
       "dest": "/api/meetings.mjs"
